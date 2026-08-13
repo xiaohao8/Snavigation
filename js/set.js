@@ -484,7 +484,8 @@ function openSet() {
 function closeSet() {
     $("#menu").removeClass('on');
 
-    closeBox();
+    // 关闭设置后恢复展示快捷方式
+    openBox();
 
     //更改设置图标
     $("#icon-menu").attr("class", "iconfont icon-shezhi");
@@ -573,6 +574,9 @@ $(document).ready(function () {
 
     // 壁纸数据加载
     setBgImgInit();
+
+    // 首页默认展示快捷方式（书签）
+    openBox();
 
     // 点击事件
     $(document).on('click', function (e) {
