@@ -129,7 +129,6 @@ img.error {
 */
 .onsearch .all-search {
     background-color: var(--main-text-form-hover-color);
-    transform: translateY(-140%);
     transition: ease 0.3s !important;
 }
 
@@ -152,11 +151,6 @@ img.error {
     transition: ease 0.5s;
 }
 
-/*时间上移*/
-.onsearch .tool-all {
-    transform: translateY(-140%) !important;
-}
-
 /*搜索时快捷方式面板淡出，避免遮挡搜索建议*/
 .onsearch .mark {
     opacity: 0;
@@ -164,12 +158,6 @@ img.error {
     transform: translateY(20px);
     transition: opacity 0.3s ease, transform 0.3s ease;
 }
-
-/*搜索引擎选择上移*/
-.onsearch .search-engine {
-    transform: translateY(-38%) !important;
-}
-
 
 /*时间*/
 .tool-all {

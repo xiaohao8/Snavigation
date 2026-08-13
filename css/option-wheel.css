@@ -1,0 +1,73 @@
+@charset "utf-8";
+
+/* OptionWheel 弧形滚轮（React Bits OptionWheel 原生复刻）
+   用于搜索栏的搜索引擎切换 */
+
+.ow-overlay {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 480px;
+    height: 230px;
+    background-color: rgba(18, 15, 23, 0.85);
+    border: 1px solid #222;
+    border-radius: 1rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    overflow: hidden;
+    display: none;
+    z-index: 3000;
+}
+
+.ow-overlay.open {
+    display: block;
+}
+
+/* 滚轮本体 */
+.option-wheel {
+    --ow-text-color: #a6a6a6;
+    --ow-active-color: #ffffff;
+    --ow-font-size: 1.6rem;
+    --ow-inset: 36px;
+
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    outline: none;
+}
+
+.option-wheel--dragging {
+    cursor: grabbing;
+}
+
+/* 每个选项绝对居中，由 rAF 循环通过 transform/opacity/filter 沿曲线偏移 */
+.option-wheel__item {
+    position: absolute;
+    top: 50%;
+    left: var(--ow-inset);
+    white-space: nowrap;
+    font-size: var(--ow-font-size);
+    line-height: 1;
+    font-weight: 200;
+    transform-origin: left center;
+    cursor: pointer;
+    will-change: transform, opacity, filter;
+    color: color-mix(in srgb, var(--ow-active-color) calc(var(--ow-p, 0) * 100%), var(--ow-text-color));
+}
+
+.option-wheel--right .option-wheel__item {
+    left: auto;
+    right: var(--ow-inset);
+    transform-origin: right center;
+}
+
+.option-wheel__item--selected {
+    font-weight: 500;
+}

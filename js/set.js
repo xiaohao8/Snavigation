@@ -544,29 +544,80 @@ $(document).ready(function () {
     // 搜索引擎列表加载
     seList();
 
+    // 搜索引擎弧形滚轮（OptionWheel 原生复刻）
+    var engineWheelOverlay = document.getElementById('engine-wheel');
+    var engineWheelInner = document.getElementById('engine-wheel-inner');
+    var engineWheel = null;
+    if (engineWheelOverlay && engineWheelInner && typeof initOptionWheel === 'function') {
+        var se_list = getSeList();
+        var se_items = [];
+        var se_keys = [];
+        Object.keys(se_list).forEach(function (key) {
+            se_items.push({ label: se_list[key].title, value: key });
+            se_keys.push(key);
+        });
+        var se_default = getSeDefault();
+        var defaultIdx = Math.max(se_keys.indexOf(se_default), 0);
+        engineWheel = initOptionWheel(engineWheelInner, {
+            items: se_items,
+            defaultIndex: defaultIdx,
+            fontSize: 1.6,
+            spacing: 1.3,
+            inset: 40,
+            tilt: 6,
+            curve: 1,
+            blur: 2,
+            fade: 0.25,
+            smoothing: 200,
+            side: 'left',
+            onSelect: function (index, item) {
+                var se = se_list[item.value];
+                if (se) {
+                    $(".search").attr("action", se["url"]);
+                    $(".wd").attr("name", se["name"]);
+                    $("#icon-se").attr("class", se["icon"]);
+                }
+                closeEngineWheel();
+            }
+        });
+    }
+
+    // 关闭搜索引擎滚轮
+    function closeEngineWheel() {
+        if (engineWheel) engineWheel.close();
+        if (engineWheelOverlay) engineWheelOverlay.classList.remove('open');
+    }
+
+    // 打开/关闭搜索引擎滚轮
+    function toggleEngineWheel() {
+        if (!engineWheel || !engineWheelOverlay) return;
+        if (engineWheelOverlay.classList.contains('open')) {
+            closeEngineWheel();
+        } else {
+            // 定位到当前搜索引擎
+            var se_default = getSeDefault();
+            var se_list_tmp = getSeList();
+            var keys = Object.keys(se_list_tmp);
+            var idx = Math.max(keys.indexOf(se_default), 0);
+            engineWheel.open(idx);
+            engineWheelOverlay.classList.add('open');
+            if (engineWheelInner) engineWheelInner.focus();
+        }
+    }
+
     // 快捷方式数据加载
     quickData();
 
     // 壁纸数据加载
     setBgImgInit();
 
-    // 首页默认展示快捷方式（书签）
-    openBox();
-
     // 点击事件
     $(document).on('click', function (e) {
-        // 选择搜索引擎点击
-        if ($(".search-engine").is(":hidden") && $(".se").is(e.target) || $(".search-engine").is(":hidden") && $("#icon-se").is(e.target)) {
-            if ($(".se").is(e.target) || $("#icon-se").is(e.target)) {
-                //获取宽度
-                $(".search-engine").css("width", $('.sou').width() - 30);
-                //出现动画
-                $(".search-engine").slideDown(160);
-            }
-        } else {
-            if (!$(".search-engine").is(e.target) && $(".search-engine").has(e.target).length === 0) {
-                $(".search-engine").slideUp(160);
-            }
+        // 搜索引擎滚轮：点击图标切换，点击外部关闭
+        if ($(e.target).closest('.se').length || $(e.target).closest('#icon-se').length) {
+            toggleEngineWheel();
+        } else if (!$(e.target).closest('#engine-wheel').length) {
+            closeEngineWheel();
         }
 
         // 自动提示隐藏
@@ -575,72 +626,22 @@ $(document).ready(function () {
         }
     });
 
-    // 时间点击：切换快捷方式展开/收起
-    $("#time_text").click(function () {
-        if ($(".mark").css("display") !== "none") {
-            // 收起快捷方式，回到纯搜索界面
-            closeBox();
-            blurWd();
-        } else {
-            // 展开快捷方式（若设置面板打开则先关闭）
-            closeSet();
-            openBox();
-        }
-    });
-
-    // 搜索引擎列表点击
-    $(".search-engine-list").on("click", ".se-li", function () {
-        var url = $(this).attr('data-url');
-        var name = $(this).attr('data-name');
-        var icon = $(this).attr('data-icon');
-        $(".search").attr("action", url);
-        $(".wd").attr("name", name);
-        $("#icon-se").attr("class", icon);
-        $(".search-engine").slideUp(160);
-    });
-
-    // 搜索引擎列表点击
-    $(".search-engine-list").on("click", ".se-li", function () {
-        var url = $(this).attr('data-url');
-        var name = $(this).attr('data-name');
-        var icon = $(this).attr('data-icon');
-        $(".search").attr("action", url);
-        $(".wd").attr("name", name);
-        $("#icon-se").attr("class", icon);
-        $(".search-engine").slideUp(160);
-    });
-
     // 搜索框点击事件
     $(document).on('click', '.sou', function () {
         focusWd();
-        $(".search-engine").slideUp(160);
+        closeEngineWheel();
     });
 
     $(document).on('click', '.wd', function () {
         focusWd();
         keywordReminder();
-        $(".search-engine").slideUp(160);
+        closeEngineWheel();
     });
 
     // 点击其他区域关闭事件
     $(document).on('click', '.close_sou', function () {
         blurWd();
-        var wasSetOpen = $("#menu").hasClass("on");
         closeSet();
-        // 设置面板原本打开时，关闭后恢复快捷方式展示
-        if (wasSetOpen) {
-            openBox();
-        }
-    });
-
-    // 点击搜索引擎时隐藏自动提示
-    $(document).on('click', '.se', function () {
-        $('#keywords').toggle();
-    });
-
-    // 恢复自动提示
-    $(document).on('click', '.se-li', function () {
-        $('#keywords').show();
     });
 
     // 自动提示 (调用百度 api）
@@ -687,12 +688,10 @@ $(document).ready(function () {
         $(".wd").val($(".keyword[data-id=" + id + "]").text());
     });
 
-    // 菜单点击
+    // 菜单点击（设置页开关）
     $("#menu").click(function () {
         if ($(this).attr("class") === "on") {
             closeSet();
-            // 关闭设置后恢复快捷方式展示
-            openBox();
         } else {
             openSet();
 

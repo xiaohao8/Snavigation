@@ -17,6 +17,8 @@
     <link rel="stylesheet" type="text/css" href="./css/font.css">
     <link rel="stylesheet" type="text/css" href="./css/mobile.css">
     <link rel="stylesheet" type="text/css" href="./css/animation.css">
+    <link rel="stylesheet" type="text/css" href="./css/dock.css">
+    <link rel="stylesheet" type="text/css" href="./css/option-wheel.css">
     <!-- Izitoast（本地化，避免 CDN 失效） -->
     <link rel="stylesheet" href="./js/lib/iziToast.min.css">
     <script type="text/javascript" src="./js/lib/iziToast.min.js">
@@ -68,41 +70,14 @@
                         <input type="submit" id="search-submit" style="display: none;">
                     </form>
                     <div id="keywords" style="display: none;"></div>
-                    <div class="search-engine" style="display: none;">
-                        <div class="search-engine-list">
-                            <div class="se-li">
-                                <a class="se-li-text" data-url="https://www.baidu.com/s" data-name="wd"
-                                    data-icon="iconfont icon-baidu">
-                                    <i id="icon-sou-list" class="iconfont icon-sousuo"></i>
-                                    <span>百度</span>
-                                </a>
-                            </div>
-                            <div class="se-li" data-url="https://cn.bing.com/search" data-name="q"
-                                data-icon="iconfont icon-bing">
-                                <a class="se-li-text">
-                                    <i id="icon-sou-list" class="iconfont icon-bing"></i>
-                                    <span>必应</span>
-                                </a>
-                            </div>
-                            <div class="se-li" data-url="https://www.google.com/search" data-name="q"
-                                data-icon="iconfont icon-google">
-                                <a class="se-li-text">
-                                    <i id="icon-sou-list" class="iconfont icon-google"></i>
-                                    <span>谷歌</span>
-                                </a>
-                            </div>
-                            <div class="se-li" data-url="https://www.sogou.com/web" data-name="query"
-                                data-icon="iconfont icon-bing">
-                                <a class="se-li-text">
-                                    <i id="icon-sou-list" class="iconfont icon-sougousousuo"></i>
-                                    <span>搜狗</span>
-                                </a>
-                            </div>
-                        </div>
+                    <!-- 搜索引擎选择：弧形滚轮（OptionWheel） -->
+                    <div class="ow-overlay" id="engine-wheel">
+                        <div class="option-wheel" id="engine-wheel-inner" role="listbox" tabindex="0"
+                            aria-label="搜索引擎选择"></div>
                     </div>
                 </div>
                 <!-- 书签页 -->
-                <div class="mark">
+                <div class="mark" style="display: none;">
                     <div class="tab">
                         <div class="tab-item active">常用</div>
                         <div class="tab-item">工具</div>
@@ -538,10 +513,29 @@
     <noscript>
         <div class="noscript fixed-top">请开启 JavaScript</div>
     </noscript>
+    <!-- Dock 快捷栏（React Bits Dock 原生复刻）三页导航：首页 / 快捷方式 / 设置 -->
+    <div class="dock-outer">
+        <div class="dock-panel" role="toolbar" aria-label="Application dock">
+            <div class="dock-item" data-action="home" tabindex="0" role="button" aria-haspopup="true" aria-label="首页" title="首页">
+                <div class="dock-icon"><i class="iconfont icon-home"></i></div>
+                <div class="dock-label">首页</div>
+            </div>
+            <div class="dock-item" data-action="shortcuts" tabindex="0" role="button" aria-haspopup="true" aria-label="快捷方式" title="快捷方式">
+                <div class="dock-icon"><i class="iconfont icon-wangluo"></i></div>
+                <div class="dock-label">快捷方式</div>
+            </div>
+            <div class="dock-item" data-action="settings" tabindex="0" role="button" aria-haspopup="true" aria-label="设置" title="设置">
+                <div class="dock-icon"><i class="iconfont icon-shezhi"></i></div>
+                <div class="dock-label">设置</div>
+            </div>
+        </div>
+    </div>
     <!-- JS -->
     <script type="text/javascript" src="./js/main.js"></script>
     <script type="text/javascript" src="./js/set.js"></script>
     <script type="text/javascript" src="./js/js.cookie.js"></script>
+    <script type="text/javascript" src="./js/dock.js"></script>
+    <script type="text/javascript" src="./js/option-wheel.js"></script>
 </body>
 
 </html>
