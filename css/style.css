@@ -102,20 +102,23 @@ img.error {
     height: 100%;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
 }
 
 .con {
     width: 100%;
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     flex-direction: column;
     align-items: center;
+    /* 时间与搜索框固定在页面上部，不随面板展开/收起而移动 */
+    padding-top: 15vh;
 }
 
 .sou {
     max-width: 680px;
     width: calc(100% - 60px);
+    position: relative;
     animation: fade;
     -webkit-animation: fade 0.5s;
     -moz-animation: fade 0.5s;
@@ -396,7 +399,8 @@ img.error {
 #keywords {
     position: absolute;
     width: 100%;
-    top: 46.5%;
+    top: calc(100% + 6px);
+    left: 0;
     font-size: small;
     color: var(--main-text-color);
     background-color: var(--main-background-color);
@@ -406,11 +410,11 @@ img.error {
     z-index: 999;
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
-    animation: down;
-    -webkit-animation: down 0.5s;
-    -moz-animation: down 0.5s;
-    -o-animation: down 0.5s;
-    -ms-animation: down 0.5s;
+    animation: fade;
+    -webkit-animation: fade 0.3s;
+    -moz-animation: fade 0.3s;
+    -o-animation: fade 0.3s;
+    -ms-animation: fade 0.3s;
 }
 
 .keyword {

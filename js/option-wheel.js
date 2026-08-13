@@ -151,20 +151,44 @@
                 else if (d < -items.length / 2) d += items.length;
             }
             applyTarget(cur + d, true);
+            // 点击选项 = 用户确认选择，通知外部关闭
+            if (opts.onConfirm) opts.onConfirm(((Math.round(targetRef) % items.length) + items.length) % items.length, items[((Math.round(targetRef) % items.length) + items.length) % items.length]);
         }
 
-        // 滚轮事件（非 passive，可 preventDefault）
-        var onWheel = function (e) {
+        // 滚轮处理（含步进累积，解决平滑滚动 deltaY 过小的问题）
+        var wheelAccum = 0;
+        var wheelTimerRef = null;
+
+        function handleWheel(e) {
             e.preventDefault();
             var delta = e.deltaMode === 1 ? e.deltaY * 24 : e.deltaY;
-            var step = Math.max(-1, Math.min(1, delta / cfg.rowH));
-            applyTarget(targetRef + step, false);
+            // 累积到 rowH 单位，整数部分移动，余数保留（平滑滚动也能逐级切换）
+            wheelAccum += delta / cfg.rowH;
+            var steps = Math.trunc(wheelAccum);
+            if (steps !== 0) {
+                // 单次事件最多移动 1 格（与 React Bits 一致，防止滚轮一次跳太多）
+                steps = Math.max(-1, Math.min(1, steps));
+                applyTarget(targetRef + steps, false);
+                wheelAccum = 0;
+            }
             if (wheelTimerRef) clearTimeout(wheelTimerRef);
             wheelTimerRef = setTimeout(function () {
-                applyTarget(targetRef, true);
+                applyTarget(targetRef, true); // 停止滚动后吸附到最近选项
+                wheelAccum = 0;
             }, 140);
+        }
+
+        // 浮层内滚轮
+        var onWheel = function (e) {
+            handleWheel(e);
         };
         container.addEventListener('wheel', onWheel, { passive: false });
+
+        // 浮层打开期间全局滚轮生效（鼠标在页面任意位置滚动都能切换）
+        var onDocWheel = function (e) {
+            if (container.contains(e.target)) return; // 浮层内已由 onWheel 处理
+            handleWheel(e);
+        };
 
         // 指针拖拽
         var onPointerDown = function (e) {
@@ -220,10 +244,15 @@
                 // 立即同步渲染一帧，打开瞬间布局即正确（无需等待 rAF）
                 lastRef = performance.now();
                 runFrame(lastRef);
+                // 打开期间全局滚轮生效
+                document.addEventListener('wheel', onDocWheel, { passive: false });
             },
             close: function () {
                 if (rafRef != null) cancelAnimationFrame(rafRef);
                 rafRef = null;
+                document.removeEventListener('wheel', onDocWheel);
+                if (wheelTimerRef) clearTimeout(wheelTimerRef);
+                wheelAccum = 0;
             },
             select: function (index) {
                 applyTarget(index, true);
@@ -233,6 +262,7 @@
             },
             destroy: function () {
                 if (rafRef != null) cancelAnimationFrame(rafRef);
+                document.removeEventListener('wheel', onDocWheel);
                 if (wheelTimerRef) clearTimeout(wheelTimerRef);
                 container.removeEventListener('wheel', onWheel);
                 container.removeEventListener('pointerdown', onPointerDown);

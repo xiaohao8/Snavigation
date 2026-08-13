@@ -570,6 +570,7 @@ $(document).ready(function () {
             fade: 0.25,
             smoothing: 200,
             side: 'left',
+            // 滚动/拖拽/键盘切换时实时应用搜索引擎（不关闭浮层，可连续滑动）
             onSelect: function (index, item) {
                 var se = se_list[item.value];
                 if (se) {
@@ -577,6 +578,9 @@ $(document).ready(function () {
                     $(".wd").attr("name", se["name"]);
                     $("#icon-se").attr("class", se["icon"]);
                 }
+            },
+            // 点击选项确认选择后关闭浮层
+            onConfirm: function (index, item) {
                 closeEngineWheel();
             }
         });
