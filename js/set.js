@@ -150,8 +150,14 @@ var quick_list_preinstall = {
 // 获取搜索引擎列表
 function getSeList() {
     var se_list_local = Cookies.get('se_list');
-    if (se_list_local !== "{}" && se_list_local) {
-        return JSON.parse(se_list_local);
+    if (se_list_local && se_list_local !== "{}") {
+        try {
+            return JSON.parse(se_list_local);
+        } catch (e) {
+            // cookie 数据损坏时重置为默认
+            setSeList(se_list_preinstall);
+            return se_list_preinstall;
+        }
     } else {
         setSeList(se_list_preinstall);
         return se_list_preinstall;
@@ -332,6 +338,19 @@ function keywordReminder() {
     }
 }
 
+// 渲染搜索引擎切换按钮图标
+// 自定义引擎（无专属图标，icon 为 icon-wangluo 占位）显示名称首字
+function renderEngineIcon(icon, title) {
+    var iconSe = $("#icon-se");
+    if (icon && icon.indexOf('icon-wangluo') >= 0 && title) {
+        iconSe.attr('class', 'icon-se-text');
+        iconSe.text(title.charAt(0));
+    } else {
+        iconSe.attr('class', icon || 'iconfont icon-wangluo');
+        iconSe.text('');
+    }
+}
+
 // 搜索框数据加载
 function searchData() {
     var se_default = getSeDefault();
@@ -339,7 +358,7 @@ function searchData() {
     var defaultSe = se_list[se_default];
     if (defaultSe) {
         $(".search").attr("action", defaultSe["url"]);
-        $("#icon-se").attr("class", defaultSe["icon"]);
+        renderEngineIcon(defaultSe["icon"], defaultSe["title"]);
         $(".wd").attr("name", defaultSe["name"]);
     }
 
@@ -392,8 +411,14 @@ function setSeInit() {
 // 获取快捷方式列表
 function getQuickList() {
     var quick_list_local = Cookies.get('quick_list');
-    if (quick_list_local !== "{}" && quick_list_local) {
-        return JSON.parse(quick_list_local);
+    if (quick_list_local && quick_list_local !== "{}") {
+        try {
+            return JSON.parse(quick_list_local);
+        } catch (e) {
+            // cookie 数据损坏时重置为默认
+            setQuickList(quick_list_preinstall);
+            return quick_list_preinstall;
+        }
     } else {
         setQuickList(quick_list_preinstall);
         return quick_list_preinstall;
@@ -545,27 +570,34 @@ $(document).ready(function () {
     seList();
 
     // 引擎切换：图标区域直接交互（无浮层）
-    var se_list = getSeList();
-    var se_keys = Object.keys(se_list);
+    // 列表动态读取（添加/删除引擎后立即生效，无需刷新页面）
     var engineCurrent = getSeDefault();
-    var engineIndex = Math.max(se_keys.indexOf(engineCurrent), 0);
+    var engineIndex = 0;
     var wheelAccum = 0;
     var wheelTimer = null;
     var engineNameTimer = null;
     var engineDragY = null;
 
-    // 应用指定引擎（循环切换）
+    // 定位到当前引擎在列表中的下标
+    function locateEngineIndex() {
+        var keys = Object.keys(getSeList());
+        engineIndex = Math.max(keys.indexOf(engineCurrent), 0);
+    }
+
+    // 应用指定引擎（循环切换，实时读取列表）
     function applyEngine(index) {
-        var n = se_keys.length;
+        var list = getSeList();
+        var keys = Object.keys(list);
+        var n = keys.length;
         if (n === 0) return;
         engineIndex = ((index % n) + n) % n;
-        engineCurrent = se_keys[engineIndex];
-        var se = se_list[engineCurrent];
+        engineCurrent = keys[engineIndex];
+        var se = list[engineCurrent];
         if (!se) return;
         $(".search").attr("action", se["url"]);
         $(".wd").attr("name", se["name"]);
         var iconSe = $("#icon-se");
-        iconSe.attr("class", se["icon"]);
+        renderEngineIcon(se["icon"], se["title"]);
         iconSe.attr("title", se["title"]);
         // 图标弹跳动画
         iconSe.css("transform", "scale(1.3)");
@@ -609,6 +641,7 @@ $(document).ready(function () {
 
     // hover 图标激活滚动切换；离开停用
     $(document).on('mouseenter', '.se', function () {
+        locateEngineIndex(); // 定位到当前引擎
         document.addEventListener('wheel', onEngineWheel, { passive: false });
     });
     $(document).on('mouseleave', '.se', function () {
@@ -624,6 +657,7 @@ $(document).ready(function () {
         if (engineDragY == null) return;
         var dy = e.clientY - engineDragY;
         if (Math.abs(dy) > 10) {
+            locateEngineIndex();
             applyEngine(engineIndex + (dy > 0 ? 1 : -1));
             engineDragY = e.clientY;
         }
