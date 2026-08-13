@@ -1,21 +1,22 @@
 @charset "utf-8";
 
-/* OptionWheel 弧形滚轮（React Bits OptionWheel 原生复刻）
-   用于搜索栏的搜索引擎切换 */
+/* 引擎迷你选择器（OptionWheel 原生复刻）
+   紧贴搜索框左侧引擎图标，hover 弹出，极小区域滚动/拖拽/点击切换 */
 
 .ow-overlay {
     position: absolute;
-    bottom: calc(100% + 10px);
-    left: 50%;
-    transform: translateX(-50%);
-    width: 480px;
-    height: 230px;
-    background-color: rgba(18, 15, 23, 0.85);
+    bottom: calc(100% + 8px);
+    left: -4px;
+    width: fit-content;
+    min-width: 68px;
+    max-width: 150px;
+    height: 170px;
+    background-color: rgba(18, 15, 23, 0.92);
     border: 1px solid #222;
-    border-radius: 1rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    border-radius: 0.6rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     overflow: hidden;
     display: none;
     z-index: 3000;
@@ -29,8 +30,8 @@
 .option-wheel {
     --ow-text-color: #a6a6a6;
     --ow-active-color: #ffffff;
-    --ow-font-size: 1.6rem;
-    --ow-inset: 36px;
+    --ow-font-size: 0.8rem;
+    --ow-inset: 8px;
 
     position: relative;
     width: 100%;
@@ -70,4 +71,18 @@
 
 .option-wheel__item--selected {
     font-weight: 500;
+}
+
+/* 引擎图标 hover 动画 */
+.sou .se,
+.sou .se i {
+    transition: transform 0.25s ease, color 0.25s ease;
+}
+
+.sou .se:hover {
+    transform: scale(1.18);
+}
+
+.sou .se:active {
+    transform: scale(0.95);
 }

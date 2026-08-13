@@ -544,70 +544,104 @@ $(document).ready(function () {
     // 搜索引擎列表加载
     seList();
 
-    // 搜索引擎弧形滚轮（OptionWheel 原生复刻）
-    var engineWheelOverlay = document.getElementById('engine-wheel');
-    var engineWheelInner = document.getElementById('engine-wheel-inner');
-    var engineWheel = null;
-    if (engineWheelOverlay && engineWheelInner && typeof initOptionWheel === 'function') {
-        var se_list = getSeList();
-        var se_items = [];
-        var se_keys = [];
-        Object.keys(se_list).forEach(function (key) {
-            se_items.push({ label: se_list[key].title, value: key });
-            se_keys.push(key);
-        });
-        var se_default = getSeDefault();
-        var defaultIdx = Math.max(se_keys.indexOf(se_default), 0);
-        engineWheel = initOptionWheel(engineWheelInner, {
-            items: se_items,
-            defaultIndex: defaultIdx,
-            fontSize: 1.6,
-            spacing: 1.3,
-            inset: 40,
-            tilt: 6,
-            curve: 1,
-            blur: 2,
-            fade: 0.25,
-            smoothing: 200,
-            side: 'left',
-            // 滚动/拖拽/键盘切换时实时应用搜索引擎（不关闭浮层，可连续滑动）
-            onSelect: function (index, item) {
-                var se = se_list[item.value];
-                if (se) {
-                    $(".search").attr("action", se["url"]);
-                    $(".wd").attr("name", se["name"]);
-                    $("#icon-se").attr("class", se["icon"]);
-                }
-            },
-            // 点击选项确认选择后关闭浮层
-            onConfirm: function (index, item) {
-                closeEngineWheel();
-            }
-        });
+    // 引擎切换：图标区域直接交互（无浮层）
+    var se_list = getSeList();
+    var se_keys = Object.keys(se_list);
+    var engineCurrent = getSeDefault();
+    var engineIndex = Math.max(se_keys.indexOf(engineCurrent), 0);
+    var wheelAccum = 0;
+    var wheelTimer = null;
+    var engineNameTimer = null;
+    var engineDragY = null;
+
+    // 应用指定引擎（循环切换）
+    function applyEngine(index) {
+        var n = se_keys.length;
+        if (n === 0) return;
+        engineIndex = ((index % n) + n) % n;
+        engineCurrent = se_keys[engineIndex];
+        var se = se_list[engineCurrent];
+        if (!se) return;
+        $(".search").attr("action", se["url"]);
+        $(".wd").attr("name", se["name"]);
+        var iconSe = $("#icon-se");
+        iconSe.attr("class", se["icon"]);
+        iconSe.attr("title", se["title"]);
+        // 图标弹跳动画
+        iconSe.css("transform", "scale(1.3)");
+        setTimeout(function () {
+            iconSe.css("transform", "");
+        }, 160);
+        // 引擎名提示（纯文字，自动淡出）
+        showEngineName(se["title"]);
     }
 
-    // 关闭搜索引擎滚轮
-    function closeEngineWheel() {
-        if (engineWheel) engineWheel.close();
-        if (engineWheelOverlay) engineWheelOverlay.classList.remove('open');
+    // 引擎名提示
+    function showEngineName(name) {
+        var el = document.getElementById('engine-name');
+        if (!el) return;
+        el.textContent = name;
+        el.classList.remove('show');
+        void el.offsetWidth; // 重启动画
+        el.classList.add('show');
+        if (engineNameTimer) clearTimeout(engineNameTimer);
+        engineNameTimer = setTimeout(function () {
+            el.classList.remove('show');
+        }, 1200);
     }
 
-    // 打开/关闭搜索引擎滚轮
-    function toggleEngineWheel() {
-        if (!engineWheel || !engineWheelOverlay) return;
-        if (engineWheelOverlay.classList.contains('open')) {
-            closeEngineWheel();
-        } else {
-            // 定位到当前搜索引擎
-            var se_default = getSeDefault();
-            var se_list_tmp = getSeList();
-            var keys = Object.keys(se_list_tmp);
-            var idx = Math.max(keys.indexOf(se_default), 0);
-            engineWheel.open(idx);
-            engineWheelOverlay.classList.add('open');
-            if (engineWheelInner) engineWheelInner.focus();
+    // 滚轮切换（hover 图标时激活，页面任意位置滚动生效）
+    function onEngineWheel(e) {
+        e.preventDefault();
+        var delta = e.deltaMode === 1 ? e.deltaY * 24 : e.deltaY;
+        wheelAccum += delta / 15; // 提高灵敏度，平滑滚动也能逐级累积
+        var steps = Math.trunc(wheelAccum);
+        if (steps !== 0) {
+            steps = Math.max(-1, Math.min(1, steps));
+            applyEngine(engineIndex + steps);
+            wheelAccum = 0;
         }
+        if (wheelTimer) clearTimeout(wheelTimer);
+        wheelTimer = setTimeout(function () {
+            wheelAccum = 0;
+        }, 140);
     }
+
+    // hover 图标激活滚动切换；离开停用
+    $(document).on('mouseenter', '.se', function () {
+        document.addEventListener('wheel', onEngineWheel, { passive: false });
+    });
+    $(document).on('mouseleave', '.se', function () {
+        document.removeEventListener('wheel', onEngineWheel);
+        wheelAccum = 0;
+    });
+
+    // 图标上拖拽切换
+    $(document).on('pointerdown', '.se', function (e) {
+        engineDragY = e.clientY;
+    });
+    $(document).on('pointermove', '.se', function (e) {
+        if (engineDragY == null) return;
+        var dy = e.clientY - engineDragY;
+        if (Math.abs(dy) > 10) {
+            applyEngine(engineIndex + (dy > 0 ? 1 : -1));
+            engineDragY = e.clientY;
+        }
+    });
+    $(document).on('pointerup pointercancel', '.se', function () {
+        engineDragY = null;
+    });
+
+    // 键盘切换（图标 focus 后上下/左右键）
+    $(document).on('keydown', '.se', function (e) {
+        if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+            e.preventDefault();
+            applyEngine(engineIndex - 1);
+        } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+            e.preventDefault();
+            applyEngine(engineIndex + 1);
+        }
+    });
 
     // 快捷方式数据加载
     quickData();
@@ -617,13 +651,6 @@ $(document).ready(function () {
 
     // 点击事件
     $(document).on('click', function (e) {
-        // 搜索引擎滚轮：点击图标切换，点击外部关闭
-        if ($(e.target).closest('.se').length || $(e.target).closest('#icon-se').length) {
-            toggleEngineWheel();
-        } else if (!$(e.target).closest('#engine-wheel').length) {
-            closeEngineWheel();
-        }
-
         // 自动提示隐藏
         if (!$(".sou").is(e.target) && $(".sou").has(e.target).length === 0) {
             $("#keywords").hide();
@@ -633,13 +660,11 @@ $(document).ready(function () {
     // 搜索框点击事件
     $(document).on('click', '.sou', function () {
         focusWd();
-        closeEngineWheel();
     });
 
     $(document).on('click', '.wd', function () {
         focusWd();
         keywordReminder();
-        closeEngineWheel();
     });
 
     // 点击其他区域关闭事件

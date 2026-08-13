@@ -101,8 +101,9 @@ img.error {
     width: 100%;
     height: 100%;
     display: flex;
-    align-items: center;
-    justify-content: flex-start;
+    flex-direction: column; /* 主轴改为垂直方向 */
+    align-items: center; /* 水平居中 */
+    justify-content: flex-start; /* 垂直方向从顶部排列 */
 }
 
 .con {
@@ -292,14 +293,49 @@ img.error {
 }
 
 .sou form .se {
+    position: relative;
     transition: 0.3s;
     border-radius: 0px 30px 30px 0px;
 }
 
-.sou form .se:hover {
+/* 引擎图标 hover 动画（切换交互区域） */
+.sou form .se:hover,
+.sou form .se:focus-visible {
     transition: 0.3s;
     background: var(--main-background-color);
     border-radius: 0px 30px 30px 0px;
+    transform: scale(1.18);
+}
+
+.sou form .se:focus-visible {
+    outline: 2px solid rgba(244, 167, 89, 0.5);
+    outline-offset: 2px;
+}
+
+.sou form .se:active {
+    transform: scale(0.95);
+}
+
+/* 切换引擎时的引擎名提示（纯文字，无背景框，自动淡出） */
+#engine-name {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    z-index: 3000;
+}
+
+#engine-name.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
 }
 
 .sou-button {
