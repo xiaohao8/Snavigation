@@ -80,7 +80,8 @@ function time() {
 //获取天气
 //每日限量 100 次
 //请前往 https://www.tianqiapi.com/index/doc?version=v6 申请（免费）
-fetch('https://yiketianqi.com/api?unescape=1&version=v6&appid=43986679&appsecret=TksqGZT7')
+//注意：该接口仅支持 http 协议（https 请求会失败），本地/ http 部署下可用
+fetch('http://yiketianqi.com/api?unescape=1&version=v6&appid=43986679&appsecret=TksqGZT7')
     .then(response => response.json())
     .then(data => {
         //$('#wea_text').html(data.wea + '&nbsp;' + data.tem_night + '℃' + '&nbsp;~&nbsp;' + data.tem_day + '℃')

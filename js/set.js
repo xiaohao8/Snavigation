@@ -177,15 +177,63 @@ function getSeDefault() {
 
 //背景图片
 var bg_img_preinstall = {
-    "type": "2", // 1:使用主题默认的背景图片 2:关闭背景图片 3:使用自定义的背景图片
+    "type": "1", // 1:默认壁纸(本地随机) 2:每日必应 3:随机风景 4:随机二次元 5:自定义壁纸
     "path": "", //自定义图片
 };
+
+// 本地壁纸列表
+var bg_img_local_list = [
+    './img/background1.webp',
+    './img/background2.webp',
+    './img/background3.webp',
+    './img/background4.webp',
+    './img/background5.webp',
+    './img/background6.webp',
+    './img/background7.webp',
+    './img/background8.webp',
+    './img/background9.webp',
+    './img/background10.webp',
+];
+
+// 随机取一张本地壁纸
+function bgRandomLocal() {
+    return bg_img_local_list[Math.floor(Math.random() * bg_img_local_list.length)];
+}
+
+// 背景图片加载失败时降级为本地壁纸（避免背景消失）
+function bgFallback() {
+    var bg = document.getElementById('bg');
+    if (bg && bg.src.indexOf('img/background') === -1) {
+        bg.onerror = null;
+        bg.src = bgRandomLocal();
+    }
+}
+
+// 必应官方接口获取壁纸（每日更新 / 历史图随机）
+function bgSetBing(idx) {
+    fetch('https://cn.bing.com/HPImageArchive.aspx?format=js&idx=' + idx + '&n=1')
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            if (data && data.images && data.images[0]) {
+                $('#bg').attr('src', 'https://cn.bing.com' + data.images[0].url);
+            } else {
+                bgFallback();
+            }
+        })
+        .catch(bgFallback);
+}
 
 // 获取背景图片
 function getBgImg() {
     var bg_img_local = Cookies.get('bg_img');
     if (bg_img_local && bg_img_local !== "{}") {
-        return JSON.parse(bg_img_local);
+        try {
+            return JSON.parse(bg_img_local);
+        } catch (e) {
+            // cookie 数据损坏时重置为默认
+            setBgImg(bg_img_preinstall);
+            return bg_img_preinstall;
+        }
     } else {
         setBgImg(bg_img_preinstall);
         return bg_img_preinstall;
@@ -204,7 +252,6 @@ function setBgImg(bg_img) {
 }
 
 // 设置-壁纸
-//$('#bg').attr('src','https://api.dujin.org/bing/1920.php')
 function setBgImgInit() {
     var bg_img = getBgImg();
     $("input[name='wallpaper-type'][value=" + bg_img["type"] + "]").click();
@@ -219,31 +266,22 @@ function setBgImgInit() {
 
     switch (bg_img["type"]) {
         case "1":
-            var pictures = new Array();
-            pictures[0] = './img/background1.webp';
-            pictures[1] = './img/background2.webp';
-            pictures[2] = './img/background3.webp';
-            pictures[3] = './img/background4.webp';
-            pictures[4] = './img/background5.webp';
-            pictures[5] = './img/background6.webp';
-            pictures[6] = './img/background7.webp';
-            pictures[7] = './img/background8.webp';
-            pictures[8] = './img/background9.webp';
-            pictures[9] = './img/background10.webp';
-            var rd = Math.floor(Math.random() * 10);
-            $('#bg').attr('src', pictures[rd]) //随机默认壁纸
+            $('#bg').attr('src', bgRandomLocal()) //随机本地默认壁纸
             break;
         case "2":
-            $('#bg').attr('src', 'https://api.dujin.org/bing/1920.php') //必应每日
+            bgSetBing(0) //必应每日（官方接口）
             break;
         case "3":
-            $('#bg').attr('src', 'https://api.ixiaowai.cn/gqapi/gqapi.php') //随机风景
+            bgSetBing(Math.floor(Math.random() * 8)) //随机风景（必应历史图库，均为自然风光）
             break;
         case "4":
-            $('#bg').attr('src', 'https://api.ixiaowai.cn/api/api.php') //随机二次元
+            $('#bg').attr('src', 'https://www.dmoe.cc/random.php') //随机二次元
             break;
         case "5":
             $('#bg').attr('src', bg_img["path"]) //自定义
+            break;
+        default:
+            $('#bg').attr('src', bgRandomLocal())
             break;
     }
 }
@@ -1079,7 +1117,7 @@ $(document).ready(function () {
         }
 
         if (type === "2") {
-            $('#wallpaper_text').html("显示必应每日一图，每天更新，刷新页面以生效 | API @ 缙哥哥");
+            $('#wallpaper_text').html("显示必应每日一图，每天更新，刷新页面以生效 | API @ Microsoft Bing");
             setBgImg(bg_img);
             iziToast.show({
                 message: '壁纸设置成功，刷新生效',
@@ -1087,7 +1125,7 @@ $(document).ready(function () {
         }
 
         if (type === "3") {
-            $('#wallpaper_text').html("显示随机风景图，每次刷新后更换，刷新页面以生效 | API @ 小歪");
+            $('#wallpaper_text').html("显示随机风景图，每次刷新后更换，刷新页面以生效 | API @ Microsoft Bing");
             setBgImg(bg_img);
             iziToast.show({
                 message: '壁纸设置成功，刷新生效',
@@ -1095,7 +1133,7 @@ $(document).ready(function () {
         }
 
         if (type === "4") {
-            $('#wallpaper_text').html("显示随机二次元图，每次刷新后更换，刷新页面以生效 | API @ 小歪");
+            $('#wallpaper_text').html("显示随机二次元图，每次刷新后更换，刷新页面以生效 | API @ dmoe.cc");
             setBgImg(bg_img);
             iziToast.show({
                 message: '壁纸设置成功，刷新生效',
