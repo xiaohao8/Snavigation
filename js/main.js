@@ -78,18 +78,59 @@ function time() {
 }
 
 //获取天气
-//每日限量 100 次
-//请前往 https://www.tianqiapi.com/index/doc?version=v6 申请（免费）
-//注意：该接口仅支持 http 协议（https 请求会失败），本地/ http 部署下可用
-fetch('http://yiketianqi.com/api?unescape=1&version=v6&appid=43986679&appsecret=TksqGZT7')
-    .then(response => response.json())
-    .then(data => {
-        //$('#wea_text').html(data.wea + '&nbsp;' + data.tem_night + '℃' + '&nbsp;~&nbsp;' + data.tem_day + '℃')
-        $('#wea_text').text(data.wea)
-        $('#tem1').text(data.tem1)
-        $('#tem2').text(data.tem2)
-    })
-    .catch(console.error)
+//使用 wttr.in（HTTPS + CORS 全支持、无需 API key、按 IP 自动定位）
+//备用：yiketianqi 接口无 CORS 头且仅支持 http，浏览器中无法正常请求
+var WEATHER_ZH = {
+    'Sunny': '晴',
+    'Clear': '晴',
+    'Partly cloudy': '多云',
+    'Cloudy': '阴',
+    'Overcast': '阴',
+    'Mist': '雾',
+    'Fog': '雾',
+    'Light drizzle': '毛毛雨',
+    'Drizzle': '毛毛雨',
+    'Patchy rain possible': '零星小雨',
+    'Light rain': '小雨',
+    'Light rain shower': '阵雨',
+    'Moderate rain': '中雨',
+    'Heavy rain': '大雨',
+    'Rain': '雨',
+    'Showers': '阵雨',
+    'Thunderstorm': '雷雨',
+    'Light snow': '小雪',
+    'Snow': '雪',
+    'Heavy snow': '大雪',
+    'Sleet': '雨夹雪',
+    'Hail': '冰雹',
+    'Windy': '大风'
+};
+
+(function getWeather() {
+    var controller = new AbortController();
+    var timer = setTimeout(function () {
+        controller.abort();
+    }, 8000); // 8 秒超时，避免接口慢时一直等待
+    fetch('https://wttr.in/?format=j1', { signal: controller.signal })
+        .then(function (response) { return response.json(); })
+        .then(function (data) {
+            clearTimeout(timer);
+            var cc = data && data.current_condition && data.current_condition[0];
+            var today = data && data.weather && data.weather[0];
+            if (cc && cc.weatherDesc && cc.weatherDesc[0]) {
+                var desc = cc.weatherDesc[0].value;
+                $('#wea_text').text(WEATHER_ZH[desc] || desc);
+            }
+            if (today) {
+                $('#tem1').text(today.maxtempC);
+                $('#tem2').text(today.mintempC);
+            }
+        })
+        .catch(function (err) {
+            clearTimeout(timer);
+            console.error('天气获取失败:', err);
+        });
+})();
     
 //Tab书签页
 $(function () {
