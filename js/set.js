@@ -466,8 +466,6 @@ function download(filename, text) {
 function openSet() {
     $("#menu").addClass('on');
 
-    openBox();
-
     //更改设置图标
     $("#icon-menu").attr("class", "iconfont icon-home");
 
@@ -484,9 +482,6 @@ function openSet() {
 function closeSet() {
     $("#menu").removeClass('on');
 
-    // 关闭设置后恢复展示快捷方式
-    openBox();
-
     //更改设置图标
     $("#icon-menu").attr("class", "iconfont icon-shezhi");
 
@@ -500,39 +495,19 @@ function closeSet() {
     quickData();
 }
 
-// 书签显示
+// 快捷方式显示
 function openBox() {
     $("#content").addClass('box');
     $(".mark").css({
         "display": "flex",
     });
-    //时间上移
-    $(".tool-all").css({
-        "transform": 'translateY(-160%)'
-    });
-    //背景模糊
-    $('#bg').css({
-        "transform": 'scale(1.08)',
-        "filter": "blur(10px)",
-        "transition": "ease 0.3s",
-    });
 }
 
-// 书签关闭
+// 快捷方式收起
 function closeBox() {
     $("#content").removeClass('box');
     $(".mark").css({
         "display": "none",
-    });
-    //时间下移
-    $(".tool-all").css({
-        "transform": 'translateY(-120%)'
-    });
-    //背景模糊
-    $('#bg').css({
-        "transform": 'scale(1)',
-        "filter": "blur(0px)",
-        "transition": "ease 0.3s",
     });
 }
 
@@ -600,13 +575,15 @@ $(document).ready(function () {
         }
     });
 
-    // 时间点击
+    // 时间点击：切换快捷方式展开/收起
     $("#time_text").click(function () {
-        if ($("#content").attr("class") === "box") {
+        if ($(".mark").css("display") !== "none") {
+            // 收起快捷方式，回到纯搜索界面
             closeBox();
-            closeSet();
             blurWd();
         } else {
+            // 展开快捷方式（若设置面板打开则先关闭）
+            closeSet();
             openBox();
         }
     });
@@ -648,7 +625,12 @@ $(document).ready(function () {
     // 点击其他区域关闭事件
     $(document).on('click', '.close_sou', function () {
         blurWd();
+        var wasSetOpen = $("#menu").hasClass("on");
         closeSet();
+        // 设置面板原本打开时，关闭后恢复快捷方式展示
+        if (wasSetOpen) {
+            openBox();
+        }
     });
 
     // 点击搜索引擎时隐藏自动提示
@@ -709,6 +691,8 @@ $(document).ready(function () {
     $("#menu").click(function () {
         if ($(this).attr("class") === "on") {
             closeSet();
+            // 关闭设置后恢复快捷方式展示
+            openBox();
         } else {
             openSet();
 

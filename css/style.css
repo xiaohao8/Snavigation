@@ -124,20 +124,9 @@ img.error {
     /* transform: translateY(-150%); */
 }
 
-/* .box .sou {
-    display: none;
-} */
-
-.box .all-search {
-    opacity: 0;
-    transition: 0.3s;
-}
-
 /*
 搜索框点击后更改样式
 */
-
-/*搜索框*/
 .onsearch .all-search {
     background-color: var(--main-text-form-hover-color);
     transform: translateY(-140%);
@@ -168,6 +157,14 @@ img.error {
     transform: translateY(-140%) !important;
 }
 
+/*搜索时快捷方式面板淡出，避免遮挡搜索建议*/
+.onsearch .mark {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
 /*搜索引擎选择上移*/
 .onsearch .search-engine {
     transform: translateY(-38%) !important;
@@ -176,12 +173,12 @@ img.error {
 
 /*时间*/
 .tool-all {
-    position: absolute;
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    transform: translateY(-120%);
     z-index: 1;
+    margin-bottom: 24px;
 }
 
 .time {
@@ -467,8 +464,8 @@ img.error {
     width: 80%;
     max-width: 900px;
     max-width: 900px;
-    position: absolute;
-    margin-top: 200px;
+    position: relative;
+    margin-top: 24px;
     z-index: 2000;
     animation: fade;
     -webkit-animation: fade 0.75s;
