@@ -78,62 +78,9 @@ function time() {
 }
 
 // ===== 天气 =====
-// 主接口：UAPI（https://uapis.cn/api/v1/misc/weather，鉴权见 js/config.js）
-// 兜底：wttr.in（HTTPS + CORS 全支持、无需 API key）
-var WEATHER_ZH = {
-    'Sunny': '晴',
-    'Clear': '晴',
-    'Partly cloudy': '多云',
-    'Cloudy': '阴',
-    'Overcast': '阴',
-    'Mist': '雾',
-    'Fog': '雾',
-    'Light drizzle': '毛毛雨',
-    'Drizzle': '毛毛雨',
-    'Patchy rain possible': '零星小雨',
-    'Light rain': '小雨',
-    'Light rain shower': '阵雨',
-    'Moderate rain': '中雨',
-    'Heavy rain': '大雨',
-    'Rain': '雨',
-    'Showers': '阵雨',
-    'Thunderstorm': '雷雨',
-    'Light snow': '小雪',
-    'Snow': '雪',
-    'Heavy snow': '大雪',
-    'Sleet': '雨夹雪',
-    'Hail': '冰雹',
-    'Windy': '大风'
-};
+// 唯一接口：UAPI（https://uapis.cn/api/v1/misc/weather，鉴权见 js/config.js）
 
-// wttr.in 兜底渲染
-function weatherFallbackWttr() {
-    var controller = new AbortController();
-    var timer = setTimeout(function () {
-        controller.abort();
-    }, 8000); // 8 秒超时
-    fetch('https://wttr.in/?format=j1', { signal: controller.signal })
-        .then(function (response) { return response.json(); })
-        .then(function (data) {
-            clearTimeout(timer);
-            var cc = data && data.current_condition && data.current_condition[0];
-            var today = data && data.weather && data.weather[0];
-            if (cc && cc.weatherDesc && cc.weatherDesc[0]) {
-                var desc = cc.weatherDesc[0].value;
-                $('#wea_text').text(WEATHER_ZH[desc] || desc);
-            }
-            if (today) {
-                $('#tem1').text(today.maxtempC);
-                $('#tem2').text(today.mintempC);
-            }
-        })
-        .catch(function (err) {
-            clearTimeout(timer);
-            console.error('天气兜底接口失败:', err);
-        });
-}
-
-// UAPI 主接口数据渲染：返回 false 表示数据结构异常（触发兜底）
+// UAPI 数据渲染：返回 false 表示数据结构异常
 function renderUapiWeather(data) {
     if (!data || typeof data.weather === 'undefined') return false;
     $('#wea_text').text(data.weather);
@@ -149,20 +96,17 @@ function renderUapiWeather(data) {
 }
 
 (function getWeather() {
-    // 主接口：UAPI（带 forecast 获取当天最高/最低温，lang 默认 zh 按 IP 自动定位）
+    // UAPI：带 forecast 获取当天最高/最低温，lang 默认 zh 按 IP 自动定位
     if (typeof UapiWeather === 'undefined') {
-        weatherFallbackWttr();
+        console.error('UapiWeather 未加载，请确认已引入 js/uapi-weather.js');
         return;
     }
     UapiWeather.fetch({ forecast: true, lang: 'zh' })
         .then(function (data) {
-            if (!renderUapiWeather(data)) {
-                weatherFallbackWttr();
-            }
+            renderUapiWeather(data);
         })
         .catch(function (err) {
-            console.error('UAPI 天气失败，回退 wttr.in:', err && (err.code || err.status), err && err.message);
-            weatherFallbackWttr();
+            console.error('UAPI 天气获取失败:', err && (err.code || err.status), err && err.message);
         });
 })();
     
