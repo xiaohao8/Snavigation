@@ -144,6 +144,90 @@ var quick_list_preinstall = {
     '12': {
         title: "哔哩哔哩",
         url: "https://www.bilibili.com/",
+    },
+    '13': {
+        title: "掘金",
+        url: "https://juejin.cn/",
+    },
+    '14': {
+        title: "菜鸟教程",
+        url: "https://www.runoob.com/",
+    },
+    '15': {
+        title: "LeetCode",
+        url: "https://leetcode.cn/",
+    },
+    '16': {
+        title: "牛客网",
+        url: "https://www.nowcoder.com/",
+    },
+    '17': {
+        title: "Gitee",
+        url: "https://gitee.com/",
+    },
+    '18': {
+        title: "开源中国",
+        url: "https://www.oschina.net/",
+    },
+    '19': {
+        title: "Steam++",
+        url: "https://steampp.net/",
+    },
+    '20': {
+        title: "图吧工具箱",
+        url: "https://www.tbtool.cn/",
+    },
+    '21': {
+        title: "TinyWow",
+        url: "https://tinywow.com/",
+    },
+    '22': {
+        title: "草料二维码",
+        url: "https://cli.im/",
+    },
+    '23': {
+        title: "ProcessOn",
+        url: "https://www.processon.com/",
+    },
+    '24': {
+        title: "PDF24",
+        url: "https://tools.pdf24.org/zh/",
+    },
+    '25': {
+        title: "TinyPNG",
+        url: "https://tinypng.com/",
+    },
+    '26': {
+        title: "Remove.bg",
+        url: "https://www.remove.bg/zh/",
+    },
+    '27': {
+        title: "DeepL",
+        url: "https://www.deepl.com/zh/translator",
+    },
+    '28': {
+        title: "学习通",
+        url: "https://www.chaoxing.com/",
+    },
+    '29': {
+        title: "知到",
+        url: "https://www.zhihuishu.com/",
+    },
+    '30': {
+        title: "中国大学MOOC",
+        url: "https://www.icourse163.org/",
+    },
+    '31': {
+        title: "学堂在线",
+        url: "https://www.xuetangx.com/",
+    },
+    '32': {
+        title: "国家智慧教育",
+        url: "https://www.smartedu.cn/",
+    },
+    '33': {
+        title: "慕课网",
+        url: "https://www.imooc.com/",
     }
 };
 
@@ -622,7 +706,8 @@ $(document).ready(function () {
         }, 1200);
     }
 
-    // 滚轮切换（hover 图标时激活，页面任意位置滚动生效）
+    // 滚轮切换（只在引擎图标上滚动时生效）
+    var engineWheelEl = null; // 当前绑定滚轮监听的图标元素
     function onEngineWheel(e) {
         e.preventDefault();
         var delta = e.deltaMode === 1 ? e.deltaY * 24 : e.deltaY;
@@ -639,13 +724,17 @@ $(document).ready(function () {
         }, 140);
     }
 
-    // hover 图标激活滚动切换；离开停用
+    // hover 图标时在图标元素上监听滚轮；离开停用
     $(document).on('mouseenter', '.se', function () {
         locateEngineIndex(); // 定位到当前引擎
-        document.addEventListener('wheel', onEngineWheel, { passive: false });
+        engineWheelEl = this;
+        this.addEventListener('wheel', onEngineWheel, { passive: false });
     });
     $(document).on('mouseleave', '.se', function () {
-        document.removeEventListener('wheel', onEngineWheel);
+        if (engineWheelEl) {
+            engineWheelEl.removeEventListener('wheel', onEngineWheel);
+            engineWheelEl = null;
+        }
         wheelAccum = 0;
     });
 

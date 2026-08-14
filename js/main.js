@@ -77,9 +77,9 @@ function time() {
     t = setTimeout(time, 1000);
 }
 
-//获取天气
-//使用 wttr.in（HTTPS + CORS 全支持、无需 API key、按 IP 自动定位）
-//备用：yiketianqi 接口无 CORS 头且仅支持 http，浏览器中无法正常请求
+// ===== 天气 =====
+// 主接口：UAPI（https://uapis.cn/api/v1/misc/weather，鉴权见 js/config.js）
+// 兜底：wttr.in（HTTPS + CORS 全支持、无需 API key）
 var WEATHER_ZH = {
     'Sunny': '晴',
     'Clear': '晴',
@@ -106,11 +106,12 @@ var WEATHER_ZH = {
     'Windy': '大风'
 };
 
-(function getWeather() {
+// wttr.in 兜底渲染
+function weatherFallbackWttr() {
     var controller = new AbortController();
     var timer = setTimeout(function () {
         controller.abort();
-    }, 8000); // 8 秒超时，避免接口慢时一直等待
+    }, 8000); // 8 秒超时
     fetch('https://wttr.in/?format=j1', { signal: controller.signal })
         .then(function (response) { return response.json(); })
         .then(function (data) {
@@ -128,7 +129,40 @@ var WEATHER_ZH = {
         })
         .catch(function (err) {
             clearTimeout(timer);
-            console.error('天气获取失败:', err);
+            console.error('天气兜底接口失败:', err);
+        });
+}
+
+// UAPI 主接口数据渲染：返回 false 表示数据结构异常（触发兜底）
+function renderUapiWeather(data) {
+    if (!data || typeof data.weather === 'undefined') return false;
+    $('#wea_text').text(data.weather);
+    // forecast=true 时返回当天最高/最低温，否则用当前温度
+    if (typeof data.temp_max !== 'undefined' && typeof data.temp_min !== 'undefined') {
+        $('#tem1').text(data.temp_max);
+        $('#tem2').text(data.temp_min);
+    } else if (typeof data.temperature !== 'undefined') {
+        $('#tem1').text(data.temperature);
+        $('#tem2').text(data.temperature);
+    }
+    return true;
+}
+
+(function getWeather() {
+    // 主接口：UAPI（带 forecast 获取当天最高/最低温，lang 默认 zh 按 IP 自动定位）
+    if (typeof UapiWeather === 'undefined') {
+        weatherFallbackWttr();
+        return;
+    }
+    UapiWeather.fetch({ forecast: true, lang: 'zh' })
+        .then(function (data) {
+            if (!renderUapiWeather(data)) {
+                weatherFallbackWttr();
+            }
+        })
+        .catch(function (err) {
+            console.error('UAPI 天气失败，回退 wttr.in:', err && (err.code || err.status), err && err.message);
+            weatherFallbackWttr();
         });
 })();
     
