@@ -273,16 +273,16 @@ var bg_img_preinstall = {
 
 // 本地壁纸列表
 var bg_img_local_list = [
-    './img/background1.webp',
-    './img/background2.webp',
-    './img/background3.webp',
-    './img/background4.webp',
-    './img/background5.webp',
-    './img/background6.webp',
-    './img/background7.webp',
-    './img/background8.webp',
-    './img/background9.webp',
-    './img/background10.webp',
+    'https://raw.giteeusercontent.com/xiaohao3/Snavigation/raw/master/img/background1.webp',
+    'https://raw.giteeusercontent.com/xiaohao3/Snavigation/raw/master/img/background2.webp',
+    'https://raw.giteeusercontent.com/xiaohao3/Snavigation/raw/master/img/background3.webp',
+    'https://raw.giteeusercontent.com/xiaohao3/Snavigation/raw/master/img/background4.webp',
+    'https://raw.giteeusercontent.com/xiaohao3/Snavigation/raw/master/img/background5.webp',
+    'https://raw.giteeusercontent.com/xiaohao3/Snavigation/raw/master/img/background6.webp',
+    'https://raw.giteeusercontent.com/xiaohao3/Snavigation/raw/master/img/background7.webp',
+    'https://raw.giteeusercontent.com/xiaohao3/Snavigation/raw/master/img/background8.webp',
+    'https://raw.giteeusercontent.com/xiaohao3/Snavigation/raw/master/img/background9.webp',
+    'https://raw.giteeusercontent.com/xiaohao3/Snavigation/raw/master/img/background10.webp',
 ];
 
 // 随机取一张本地壁纸
@@ -290,10 +290,10 @@ function bgRandomLocal() {
     return bg_img_local_list[Math.floor(Math.random() * bg_img_local_list.length)];
 }
 
-// 背景图片加载失败时降级为本地壁纸（避免背景消失）
+// 背景图片加载失败时降级为 Gitee 壁纸（避免背景消失）
 function bgFallback() {
     var bg = document.getElementById('bg');
-    if (bg && bg.src.indexOf('img/background') === -1) {
+    if (bg && bg.src.indexOf('raw.giteeusercontent.com') === -1) {
         bg.onerror = null;
         bg.src = bgRandomLocal();
     }
