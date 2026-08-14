@@ -80,28 +80,53 @@ function time() {
 // ===== 天气 =====
 // 唯一接口：UAPI（https://uapis.cn/api/v1/misc/weather，鉴权见 js/config.js）
 
+// weather_icon（weather_code）代码 → 中文天气映射
+// 依据：UAPI OpenAPI 规范中 weather_icon 的 enum（和风天气标准代码体系）
+// 说明：仅映射已确认的经典代码段；未收录代码（如 1000+ 新代码）回退接口返回的 weather 文本
+var WEATHER_CODE_ZH = {
+    '100': '晴', '101': '多云', '102': '少云', '103': '晴间多云', '104': '阴',
+    '150': '晴', '151': '多云', '152': '少云', '153': '晴间多云',
+    '300': '阵雨', '301': '强阵雨', '302': '雷阵雨', '303': '强雷阵雨', '304': '雷阵雨伴有冰雹',
+    '305': '小雨', '306': '中雨', '307': '大雨', '308': '极端降雨', '309': '毛毛雨',
+    '310': '暴雨', '311': '大暴雨', '312': '特大暴雨', '313': '冻雨',
+    '314': '小到中雨', '315': '中到大雨', '316': '大到暴雨',
+    '317': '暴雨到大暴雨', '318': '大暴雨到特大暴雨',
+    '350': '阵雨', '351': '强阵雨', '399': '雨',
+    '400': '小雪', '401': '中雪', '402': '大雪', '403': '暴雪', '404': '雨夹雪',
+    '405': '雨雪天气', '406': '阵雨夹雪', '407': '阵雪',
+    '408': '小到中雪', '409': '中到大雪', '410': '大到暴雪',
+    '456': '阵雨夹雪', '457': '阵雪', '499': '雪',
+    '500': '薄雾', '501': '雾', '502': '霾', '503': '扬沙', '504': '浮尘',
+    '507': '沙尘暴', '508': '强沙尘暴', '509': '浓雾', '510': '强浓雾',
+    '511': '中度霾', '512': '重度霾', '513': '严重霾', '514': '大雾', '515': '特强浓雾',
+    '900': '热', '901': '冷', '999': '未知'
+};
+
 // UAPI 数据渲染：返回 false 表示数据结构异常
 function renderUapiWeather(data) {
     if (!data || typeof data.weather === 'undefined') return false;
-    $('#wea_text').text(data.weather);
-    // forecast=true 时返回当天最高/最低温，否则用当前温度
-    if (typeof data.temp_max !== 'undefined' && typeof data.temp_min !== 'undefined') {
-        $('#tem1').text(data.temp_max);
-        $('#tem2').text(data.temp_min);
-    } else if (typeof data.temperature !== 'undefined') {
-        $('#tem1').text(data.temperature);
-        $('#tem2').text(data.temperature);
+    // 天气：优先用 weather_icon 代码映射（稳定分类），映射不到回退接口 weather 文本
+    var weatherText = WEATHER_CODE_ZH[data.weather_icon] || data.weather;
+    $('#wea_text').text(weatherText);
+    // 当前温度
+    if (typeof data.temperature !== 'undefined') {
+        $('#tem1').text(Math.round(data.temperature * 10) / 10);
     }
+    // 风力（含风向）
+    var wind = [];
+    if (data.wind_direction) wind.push(data.wind_direction);
+    if (data.wind_power) wind.push(data.wind_power);
+    $('#wind_text').text(wind.join(' ') || 'N/A');
     return true;
 }
 
 (function getWeather() {
-    // UAPI：带 forecast 获取当天最高/最低温，lang 默认 zh 按 IP 自动定位
+    // UAPI：lang 默认 zh 按 IP 自动定位
     if (typeof UapiWeather === 'undefined') {
         console.error('UapiWeather 未加载，请确认已引入 js/uapi-weather.js');
         return;
     }
-    UapiWeather.fetch({ forecast: true, lang: 'zh' })
+    UapiWeather.fetch({ lang: 'zh' })
         .then(function (data) {
             renderUapiWeather(data);
         })
