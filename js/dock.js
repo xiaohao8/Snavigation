@@ -126,11 +126,16 @@
                 if (typeof openBox === 'function') openBox();
             }
         },
-        // 设置页：显示/隐藏设置面板
+        // 设置页：显示/隐藏设置面板（含内容加载）
         settings: function () {
-            var menu = document.getElementById('menu');
-            if (menu) {
-                menu.click(); // 复用菜单图标的设置开关逻辑（含内容加载）
+            var setPanel = document.querySelector('.set');
+            if (!setPanel) return;
+            if (setPanel.style.display !== 'none') {
+                if (typeof closeSet === 'function') closeSet();
+            } else {
+                if (typeof openSet === 'function') openSet();
+                if (typeof setSeInit === 'function') setSeInit(); //搜索引擎设置
+                if (typeof setQuickInit === 'function') setQuickInit(); //快捷方式设置
             }
         }
     };

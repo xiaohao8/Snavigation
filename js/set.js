@@ -573,12 +573,8 @@ function download(filename, text) {
 
 // 打开设置
 function openSet() {
-    $("#menu").addClass('on');
-
-    //更改设置图标
-    $("#icon-menu").attr("class", "iconfont icon-home");
-
-    //隐藏书签打开设置
+    // 右上角按钮已改为书签面板开关，这里不再改动其 class/图标
+    // 隐藏书签打开设置
     $(".mark").css({
         "display": "none",
     });
@@ -587,14 +583,17 @@ function openSet() {
     });
 }
 
+// 打开设置并定位到"快捷方式"（书签管理）tab
+function openBookmarkManage() {
+    openSet();
+    setQuickInit();
+    $("#set-quick-menu").trigger('click');
+}
+
 // 关闭设置
 function closeSet() {
-    $("#menu").removeClass('on');
-
-    //更改设置图标
-    $("#icon-menu").attr("class", "iconfont icon-shezhi");
-
-    //隐藏设置
+    // 右上角按钮已改为书签面板开关，这里不再改动其 class/图标
+    // 隐藏设置
     $(".set").css({
         "display": "none",
     });
@@ -840,16 +839,19 @@ $(document).ready(function () {
         $(".wd").val($(".keyword[data-id=" + id + "]").text());
     });
 
-    // 菜单点击（设置页开关）
+    // 右上角设置按钮：展开书签面板（AnimatedList）
     $("#menu").click(function () {
-        if ($(this).attr("class") === "on") {
-            closeSet();
+        if (typeof BookmarkPanel !== 'undefined') {
+            BookmarkPanel.toggle();
         } else {
-            openSet();
-
-            // 设置内容加载
-            setSeInit(); //搜索引擎设置
-            setQuickInit(); //快捷方式设置
+            // 组件未加载时回退到设置面板
+            if ($(this).attr("class") === "on") {
+                closeSet();
+            } else {
+                openSet();
+                setSeInit();
+                setQuickInit();
+            }
         }
     });
 
