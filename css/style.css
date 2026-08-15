@@ -86,6 +86,15 @@ body[data-theme="glass"] #bg {
     opacity: 1;
 }
 
+/* 暗色模式（非玻璃）：纯黑主页，完全隐藏壁纸层（不加载、不显示），确保「无壁纸」 */
+html body:not([data-theme="glass"]) {
+    background-color: #000000;
+}
+
+body:not([data-theme="glass"]) .bg-all {
+    display: none;
+}
+
 img.error {
     display: none;
 }
@@ -510,6 +519,14 @@ img.error {
     -moz-animation: fade 0.75s;
     -o-animation: fade 0.75s;
     -ms-animation: fade 0.75s;
+}
+
+/* 三页面板统一 #120F17 黑色（首页搜索 / 快捷方式 / 设置），仅暗色模式生效，不影响玻璃主题半透明面板 */
+body:not([data-theme="glass"]) .all-search,
+body:not([data-theme="glass"]) #keywords,
+body:not([data-theme="glass"]) .mark,
+body:not([data-theme="glass"]) .set {
+    background-color: #120F17;
 }
 
 .mark .tab,
