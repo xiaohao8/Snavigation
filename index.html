@@ -19,6 +19,7 @@
     <link rel="stylesheet" type="text/css" href="./css/animation.css">
     <link rel="stylesheet" type="text/css" href="./css/dock.css">
     <link rel="stylesheet" type="text/css" href="./css/animated-list.css">
+    <link rel="stylesheet" type="text/css" href="./css/theme.css">
     <!-- Izitoast（本地化，避免 CDN 失效） -->
     <link rel="stylesheet" href="./js/lib/iziToast.min.css">
     <script type="text/javascript" src="./js/lib/iziToast.min.js">
@@ -246,6 +247,7 @@
                         <div class="tab-items" id="set-quick-menu">快捷方式</div>
                         <div class="tab-items">背景图片</div>
                         <div class="tab-items">数据备份</div>
+                        <div class="tab-items" id="set-theme-menu">外观</div>
                     </div>
                     <div class="contents productss">
                         <!-- 搜索引擎设置 -->
@@ -489,6 +491,27 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- 外观设置 -->
+                        <div class="mainConts">
+                            <div class="set_blocks">
+                                <div class="set_blocks_content">
+                                    <div class="theme-options">
+                                        <div class="theme-card" data-theme-option="dark" role="button" tabindex="0"
+                                            aria-label="暗色主题">
+                                            <div class="theme-card-preview dark"></div>
+                                            <div class="theme-card-name">暗色</div>
+                                            <div class="theme-card-desc">经典深色面板<br>专注、沉稳的默认风格</div>
+                                        </div>
+                                        <div class="theme-card" data-theme-option="glass" role="button" tabindex="0"
+                                            aria-label="液态玻璃主题">
+                                            <div class="theme-card-preview glass"></div>
+                                            <div class="theme-card-name">液态玻璃</div>
+                                            <div class="theme-card-desc">透明毛玻璃面板<br>背景通透、轻盈灵动</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -526,6 +549,20 @@
             </div>
         </div>
     </div>
+    <!-- Cookie 提示 -->
+    <div class="cookie-tip" id="cookie-tip" role="dialog" aria-label="Cookie 提示">
+        <div class="cookie-tip-title">
+            <i class="iconfont icon-baobei"></i>
+            <span>本站使用 Cookie 保存你的数据</span>
+        </div>
+        <p class="cookie-tip-text">
+            你的<b>书签</b>、<b>搜索引擎</b>、<b>壁纸</b>与<b>主题设置</b>都保存在浏览器 Cookie 中。
+            请勿清除本站 Cookie，否则这些数据将恢复为默认值。
+        </p>
+        <div class="cookie-tip-buttons">
+            <button class="cookie-tip-btn cookie-tip-btn--primary" id="cookie-tip-ok">知道了</button>
+        </div>
+    </div>
     <!-- JS -->
     <script type="text/javascript" src="./js/config.js"></script>
     <script type="text/javascript" src="./js/uapi-weather.js"></script>
@@ -534,6 +571,8 @@
     <script type="text/javascript" src="./js/js.cookie.js"></script>
     <script type="text/javascript" src="./js/dock.js"></script>
     <script type="text/javascript" src="./js/animated-list.js"></script>
+    <script type="text/javascript" src="./js/theme.js"></script>
+    <script type="text/javascript" src="./js/cookie-tip.js"></script>
 </body>
 
 </html>
