@@ -423,15 +423,17 @@ function keywordReminder() {
 }
 
 // 渲染搜索引擎切换按钮图标
-// 自定义引擎（无专属图标，icon 为 icon-wangluo 占位）显示名称首字
+// si:品牌 / URL 配置优先；否则用原 iconfont class（icon-baidu 等）
 function renderEngineIcon(icon, title) {
     var iconSe = $("#icon-se");
-    if (icon && icon.indexOf('icon-wangluo') >= 0 && title) {
-        iconSe.attr('class', 'icon-se-text');
-        iconSe.text(title.charAt(0));
+    if (typeof Icons !== 'undefined' && icon && (icon.indexOf('si:') === 0 || icon.indexOf('http') === 0)) {
+        // 用户配置的图标 → html 注入
+        iconSe.attr('class', '');
+        iconSe.html(Icons.engine(icon, title));
     } else {
+        // 原 iconfont class
+        iconSe.html('');
         iconSe.attr('class', icon || 'iconfont icon-wangluo');
-        iconSe.text('');
     }
 }
 
@@ -472,20 +474,24 @@ function setSeInit() {
     var se_default = getSeDefault();
     var se_list = getSeList();
     var html = "";
+    var icHome = '<i class="iconfont icon-home"></i>';
+    var icPencil = '<i class="iconfont icon-xiugai"></i>';
+    var icTrash = '<i class="iconfont icon-delete"></i>';
     for (var i in se_list) {
+        var se = se_list[i];
+        var listIcon = typeof Icons !== 'undefined' ? '<span class="set-list-icon">' + Icons.engine(se["icon"], se["title"]) + '</span>' : '';
         var tr = `<div class='se_list_div'><div class='se_list_num'>${i}</div>`;
         if (i === se_default) {
-            tr = `<div class='se_list_div'><div class='se_list_num'>
-            <i class='iconfont icon-home'></i></div>`;
+            tr = `<div class='se_list_div'><div class='se_list_num'>${icHome}</div>`;
         }
-        tr += `<div class='se_list_name'>${se_list[i]["title"]}</div>
+        tr += `<div class='se_list_name'>${listIcon}${se["title"]}</div>
         <div class='se_list_button'>
         <button class='set_se_default' value='${i}' style='border-radius: 8px 0px 0px 8px;'>
-        <i class='iconfont icon-home'></i></button>
+        ${icHome}</button>
         <button class='edit_se' value='${i}'>
-        <i class='iconfont icon-xiugai'></i></button>
+        ${icPencil}</button>
         <button class='delete_se' value='${i}' style='border-radius: 0px 8px 8px 0px;'>
-        <i class='iconfont icon-delete'></i></button></div>
+        ${icTrash}</button></div>
         </div>`;
         html += tr;
     }
@@ -520,37 +526,97 @@ function setQuickList(quick_list) {
     return false;
 }
 
+// 获取书签列表（用户完全自建，与快捷方式分离）
+function getBookmarkList() {
+    var list_local = Cookies.get('bookmark_list');
+    if (list_local && list_local !== "{}") {
+        try {
+            return JSON.parse(list_local);
+        } catch (e) {
+            return {};
+        }
+    }
+    return {};
+}
+
+// 设置书签列表
+function setBookmarkList(list) {
+    if (list) {
+        Cookies.set('bookmark_list', list, {
+            expires: 36500
+        });
+        return true;
+    }
+    return false;
+}
+
 // 快捷方式数据加载
 function quickData() {
     var html = "";
     var quick_list = getQuickList();
     for (var i in quick_list) {
+        var q = quick_list[i];
+        var iconHtml = typeof Icons !== 'undefined' ? Icons.site(q['url'], q['title'], 32, q['icon']) : '';
         html += `<div class="quick">
-                    <a href="${quick_list[i]['url']}" target="_blank">${quick_list[i]['title']}</a>
+                    <a href="${q['url']}" target="_blank">${iconHtml}<span class="q-name">${q['title']}</span></a>
                 </div>`;
     }
-    $(".quick-all").html(html + `<div class="quick"><a id="set-quick"><i class="iconfont icon-tianjia-"></i></a></div>`);
+    var icPlus = '<i class="iconfont icon-tianjia-"></i>';
+    $(".quick-all").html(html + `<div class="quick"><a id="set-quick">${icPlus}<span class="q-name">添加</span></a></div>`);
 }
 
 // 设置-快捷方式加载
 function setQuickInit() {
     var quick_list = getQuickList();
     var html = "";
+    var icPencil = typeof Icons !== 'undefined' ? Icons.ui('pencil') : '<i class="iconfont icon-xiugai"></i>';
+    var icTrash = typeof Icons !== 'undefined' ? Icons.ui('trash') : '<i class="iconfont icon-delete"></i>';
     for (var i in quick_list) {
+        var q = quick_list[i];
+        var listIcon = typeof Icons !== 'undefined' ? '<span class="set-list-icon">' + Icons.site(q['url'], q['title'], 22, q['icon']) + '</span>' : '';
         tr = `
         <div class='quick_list_div'>
             <div class='quick_list_div_num'>${i}</div>
-            <div class='quick_list_div_name'>${quick_list[i]['title']}</div>
+            <div class='quick_list_div_name'>${listIcon}${q['title']}</div>
             <div class='quick_list_div_button'>
                 <button class='edit_quick' value='${i}' style='border-radius: 8px 0px 0px 8px;'>
-                <i class='iconfont icon-xiugai'></i></button>
+                ${icPencil}</button>
                 <button class='delete_quick' value='${i}' style='border-radius: 0px 8px 8px 0px;'>
-                <i class='iconfont icon-delete'></i></button>
+                ${icTrash}</button>
             </div>
         </div>`;
         html += tr;
     }
     $(".quick_list_table").html(html);
+}
+
+// 设置-书签加载（用户完全自建）
+function setBookmarkInit() {
+    var list = getBookmarkList();
+    var html = "";
+    var icPencil = typeof Icons !== 'undefined' ? Icons.ui('pencil') : '<i class="iconfont icon-xiugai"></i>';
+    var icTrash = typeof Icons !== 'undefined' ? Icons.ui('trash') : '<i class="iconfont icon-delete"></i>';
+    if (!Object.keys(list).length) {
+        html = '<div class="set-list-empty">暂无书签，点击上方「新增」添加你的收藏</div>';
+    } else {
+        for (var i in list) {
+            var bm = list[i];
+            var listIcon = typeof Icons !== 'undefined' ? '<span class="set-list-icon">' + Icons.site(bm['url'], bm['title'], 22, bm['icon']) + '</span>' : '';
+            tr = `
+            <div class='quick_list_div'>
+                <div class='quick_list_div_num'>${i}</div>
+                <div class='quick_list_div_name'>${listIcon}${bm['title']}</div>
+                <div class='quick_list_div_button'>
+                    <button class='edit_bookmark' value='${i}' style='border-radius: 8px 0px 0px 8px;'>
+                    ${icPencil}</button>
+                    <button class='delete_bookmark' value='${i}' style='border-radius: 0px 8px 8px 0px;'>
+                    ${icTrash}</button>
+                </div>
+            </div>`;
+            html += tr;
+        }
+    }
+    $(".bookmark_list_table").html(html);
 }
 
 /**
@@ -583,11 +649,37 @@ function openSet() {
     });
 }
 
-// 打开设置并定位到"快捷方式"（书签管理）tab
+// 滚动设置面板到指定区块
+function scrollToSetSection(id) {
+    var sec = document.getElementById(id);
+    if (sec && sec.scrollIntoView) {
+        sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+// 打开设置并定位到"快捷方式"tab（书签管理区）
 function openBookmarkManage() {
     openSet();
-    setQuickInit();
     $("#set-quick-menu").trigger('click');
+    setQuickInit();
+    setBookmarkInit();
+    scrollToSetSection('section-bookmark');
+}
+
+// 打开设置并直接进入"添加书签"（书签区表单）
+function openBookmarkAdd() {
+    openBookmarkManage();
+    $(".set_bookmark_list_add").trigger('click');
+}
+
+// 打开设置并直接进入"添加快捷方式"（快捷方式区表单）
+function openQuickAdd() {
+    openSet();
+    $("#set-quick-menu").trigger('click');
+    setQuickInit();
+    setBookmarkInit();
+    scrollToSetSection('section-quick');
+    $(".set_quick_list_add").trigger('click');
 }
 
 // 关闭设置
@@ -855,17 +947,9 @@ $(document).ready(function () {
         }
     });
 
-    // 快捷方式添加按钮点击
+    // 快捷方式添加按钮点击（首页快捷方式页 → 定位到设置-快捷方式区上半部分）
     $("#set-quick").click(function () {
-        openSet();
-
-        // 设置内容加载
-        setSeInit(); //搜索引擎设置
-        setQuickInit(); //快捷方式设置
-
-        //添加快捷方式
-        $("#set-quick-menu").trigger('click');
-        $(".set_quick_list_add").trigger('click');
+        openQuickAdd();
     });
 
     // 修改默认搜索引擎
@@ -914,8 +998,8 @@ $(document).ready(function () {
         var title = $(".se_add_content input[name='title']").val();
         var url = $(".se_add_content input[name='url']").val();
         var name = $(".se_add_content input[name='name']").val();
-        //var icon = $(".se_add_content input[name='icon']").val();
-        var icon = "iconfont icon-wangluo";
+        // 图标：表单可配置（留空则自定义引擎默认走首字徽章，旧数据兼容 icon-wangluo）
+        var icon = $(".se_add_content input[name='icon']").val() || '';
 
         var num = /^\+?[1-9][0-9]*$/;
         if (!num.test(key)) {
@@ -1001,7 +1085,7 @@ $(document).ready(function () {
         $(".se_add_content input[name='title']").val(se_list[key]["title"]);
         $(".se_add_content input[name='url']").val(se_list[key]["url"]);
         $(".se_add_content input[name='name']").val(se_list[key]["name"]);
-        // $(".se_add_content input[name='icon']").val("iconfont icon-Earth");
+        $(".se_add_content input[name='icon']").val(se_list[key]["icon"] || '');
 
         //隐藏列表
         hideSe();
@@ -1090,7 +1174,7 @@ $(document).ready(function () {
         var key = $(".quick_add_content input[name='key']").val();
         var title = $(".quick_add_content input[name='title']").val();
         var url = $(".quick_add_content input[name='url']").val();
-        var img = $(".quick_add_content input[name='img']").val();
+        var icon = $(".quick_add_content input[name='icon']").val();
 
         var num = /^\+?[1-9][0-9]*$/;
         if (!num.test(key)) {
@@ -1112,10 +1196,11 @@ $(document).ready(function () {
                         quick_list[key] = {
                             title: title,
                             url: url,
-                            img: img,
+                            icon: icon,
                         };
                         setQuickList(quick_list);
                         setQuickInit();
+                        quickData();
                         $(".quick_add_content").hide();
                         //显示列表
                         showQuick();
@@ -1144,10 +1229,11 @@ $(document).ready(function () {
         quick_list[key] = {
             title: title,
             url: url,
-            img: img,
+            icon: icon,
         };
         setQuickList(quick_list);
         setQuickInit();
+        quickData();
         $(".quick_add_content").hide();
         iziToast.show({
             timeout: 2000,
@@ -1204,7 +1290,7 @@ $(document).ready(function () {
         $(".quick_add_content input[name='key']").val(key);
         $(".quick_add_content input[name='title']").val(quick_list[key]["title"]);
         $(".quick_add_content input[name='url']").val(quick_list[key]["url"]);
-        $(".quick_add_content input[name='img']").val(quick_list[key]["img"]);
+        $(".quick_add_content input[name='icon']").val(quick_list[key]["icon"] || '');
 
         //隐藏列表
         hideQuick();
@@ -1238,6 +1324,109 @@ $(document).ready(function () {
                     instance.hide({
                         transitionOut: 'flipOutX',
                     }, toast, 'buttonName');
+                }]
+            ]
+        });
+    });
+
+    // ===== 书签管理（用户完全自建，与快捷方式分离）=====
+
+    // 书签添加
+    $(".set_bookmark_list_add").click(function () {
+        $(".bookmark_add_content input").val("");
+        $(".bookmark_add_content").show();
+        $(".bookmark_list_table").hide();
+    });
+
+    // 书签保存
+    $(".bookmark_add_save").click(function () {
+        var key_inhere = $(".bookmark_add_content input[name='key_inhere']").val();
+        var key = $(".bookmark_add_content input[name='key']").val();
+        var title = $(".bookmark_add_content input[name='title']").val();
+        var url = $(".bookmark_add_content input[name='url']").val();
+        var icon = $(".bookmark_add_content input[name='icon']").val();
+
+        var num = /^\+?[1-9][0-9]*$/;
+        if (!num.test(key)) {
+            iziToast.show({ timeout: 2000, message: '书签 ' + key + ' 不是正整数' });
+            return;
+        }
+        if (!title || !url) {
+            iziToast.show({ timeout: 2000, message: '请填写书签名称与网址' });
+            return;
+        }
+
+        var list = getBookmarkList();
+
+        if (list[key]) {
+            iziToast.show({
+                timeout: 8000,
+                message: '书签 ' + key + ' 已有数据，是否覆盖？',
+                buttons: [
+                    ['<button>确认</button>', function (instance, toast) {
+                        list[key] = { title: title, url: url, icon: icon };
+                        setBookmarkList(list);
+                        setBookmarkInit();
+                        $(".bookmark_add_content").hide();
+                        $(".bookmark_list_table").show();
+                        instance.hide({ transitionOut: 'flipOutX' }, toast, 'buttonName');
+                        iziToast.show({ message: '覆盖成功' });
+                    }, true],
+                    ['<button>取消</button>', function (instance, toast) {
+                        instance.hide({ transitionOut: 'flipOutX' }, toast, 'buttonName');
+                    }]
+                ]
+            });
+            return;
+        }
+
+        if (key_inhere && key != key_inhere) delete list[key_inhere];
+
+        list[key] = { title: title, url: url, icon: icon };
+        setBookmarkList(list);
+        setBookmarkInit();
+        $(".bookmark_add_content").hide();
+        $(".bookmark_list_table").show();
+        iziToast.show({ timeout: 2000, message: '添加成功' });
+    });
+
+    // 书签取消
+    $(".bookmark_add_cancel").click(function () {
+        $(".bookmark_add_content").hide();
+        $(".bookmark_list_table").show();
+    });
+
+    // 书签修改
+    $(".bookmark_list").on("click", ".edit_bookmark", function () {
+        var list = getBookmarkList();
+        var key = $(this).val();
+        if (!list[key]) return;
+        $(".bookmark_add_content input[name='key_inhere']").val(key);
+        $(".bookmark_add_content input[name='key']").val(key);
+        $(".bookmark_add_content input[name='title']").val(list[key]["title"]);
+        $(".bookmark_add_content input[name='url']").val(list[key]["url"]);
+        $(".bookmark_add_content input[name='icon']").val(list[key]["icon"] || '');
+        $(".bookmark_list_table").hide();
+        $(".bookmark_add_content").show();
+    });
+
+    // 书签删除
+    $(".bookmark_list").on("click", ".delete_bookmark", function () {
+        var key = $(this).val();
+        iziToast.show({
+            timeout: 8000,
+            message: '书签 ' + key + ' 是否删除？',
+            buttons: [
+                ['<button>确认</button>', function (instance, toast) {
+                    var list = getBookmarkList();
+                    delete list[key];
+                    setBookmarkList(list);
+                    setBookmarkInit();
+                    instance.hide({ transitionOut: 'flipOutX' }, toast, 'buttonName');
+                    iziToast.show({ timeout: 2000, message: '删除成功' });
+                }, true],
+                ['<button>取消</button>', function (instance, toast) {
+                    instance.hide({ transitionOut: 'flipOutX' }, toast, 'buttonName');
                 }]
             ]
         });

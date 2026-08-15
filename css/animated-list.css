@@ -138,11 +138,10 @@
 }
 
 .bm-item-icon {
-    font-size: 1.1rem;
-    color: #f4a759;
     flex-shrink: 0;
-    width: 1.2em;
-    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .bm-item-text {

@@ -74,11 +74,14 @@
                 itemEl.setAttribute('data-index', index);
                 itemEl.style.transitionDelay = Math.min(index * 0.03, 0.3) + 's';
                 itemEl.style.marginBottom = '1rem';
-                if (item.icon) {
-                    itemEl.appendChild(el('i', 'iconfont bm-item-icon ' + item.icon));
+                // 网站图标：favicon 字段优先（si:品牌 / URL / 自动）+ 彩色首字底
+                var iconWrap = el('span', 'bm-item-icon');
+                if (typeof Icons !== 'undefined' && item.url) {
+                    iconWrap.innerHTML = Icons.site(item.url, item.title, 28, item.icon);
                 } else {
-                    itemEl.appendChild(el('span', 'bm-item-icon', item.title ? item.title.charAt(0) : '·'));
+                    iconWrap.textContent = item.title ? item.title.charAt(0) : '·';
                 }
+                itemEl.appendChild(iconWrap);
                 itemEl.appendChild(el('p', 'bm-item-text', item.title));
                 itemEl.addEventListener('mouseenter', function () {
                     setSelected(index, true);
@@ -203,7 +206,18 @@
         panel.appendChild(listWrap);
 
         var footer = el('div', 'bm-panel-footer');
-        var manageBtn = el('button', 'bm-manage-btn', '⚙ 管理书签');
+        // 添加书签按钮
+        var addBtn = el('button', 'bm-manage-btn', '');
+        addBtn.style.marginBottom = '8px';
+        addBtn.innerHTML = '<i class="iconfont icon-tianjia-"></i> <span>添加书签</span>';
+        addBtn.addEventListener('click', function () {
+            closePanel();
+            if (typeof openBookmarkAdd === 'function') openBookmarkAdd();
+        });
+        footer.appendChild(addBtn);
+        // 管理书签按钮
+        var manageBtn = el('button', 'bm-manage-btn', '');
+        manageBtn.innerHTML = '<i class="iconfont icon-shezhi"></i> <span>管理书签</span>';
         manageBtn.addEventListener('click', function () {
             closePanel();
             if (typeof openBookmarkManage === 'function') openBookmarkManage();
@@ -232,16 +246,16 @@
         });
     }
 
-    // 读取书签数据（与快捷方式 quick_list 同源）
+    // 读取书签数据（独立数据源：用户自建的 bookmark_list）
     function getBookmarkItems() {
-        var quick = null;
-        if (typeof getQuickList === 'function') {
-            quick = getQuickList();
+        var bm = null;
+        if (typeof getBookmarkList === 'function') {
+            bm = getBookmarkList();
         }
         var list = [];
-        if (quick) {
-            Object.keys(quick).forEach(function (key) {
-                var q = quick[key];
+        if (bm) {
+            Object.keys(bm).forEach(function (key) {
+                var q = bm[key];
                 if (q && q.title && q.url) {
                     list.push({ title: q.title, url: q.url, icon: q.icon || '' });
                 }

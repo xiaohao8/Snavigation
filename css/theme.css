@@ -1,24 +1,20 @@
 @charset "utf-8";
 
 /* ============================================================
- * 主题系统（Liquid Glass 风格重构）
+ * 主题系统
  * ------------------------------------------------------------
- * 暗色（默认）：保持原有深色半透明面板
+ * 暗色（默认）：实心深色面板（#120f17 系）
  * 液态玻璃（body[data-theme="glass"]）：
- *   遵循 Apple Liquid Glass 规范——
- *   · 玻璃仅用于浮层/控件层，内容层保持实底（避免玻璃叠玻璃）
- *   · 材质分层：面板=厚玻璃(Standard)，控件=薄玻璃(Controls)
- *   · 高光/内边框亮线/外部投影营造深度，而非靠颜色
- *   · 克制 tint：淡冷色高光 + 微琥珀点缀
- *   · 对比度优先：玻璃上文字确保可读（4.5:1）
+ *   参照暗色主题面板的透明度（约 40% 深色半透明）——
+ *   深色磨砂玻璃，弱化白色高光，柔和不刺眼
  * ============================================================ */
 
-/* ---------- 液态玻璃：语义色令牌覆盖 ---------- */
+/* ---------- 液态玻璃：语义色令牌覆盖（深色半透明系） ---------- */
 body[data-theme="glass"] {
-    --main-background-color: rgba(255, 255, 255, 0.06);
-    --main-background-hover-color: rgba(255, 255, 255, 0.14);
-    --main-background-active-color: rgba(255, 255, 255, 0.22);
-    --main-button-color: rgba(255, 255, 255, 0.08);
+    --main-background-color: rgba(13, 11, 19, 0.42);
+    --main-background-hover-color: rgba(255, 255, 255, 0.08);
+    --main-background-active-color: rgba(255, 255, 255, 0.14);
+    --main-button-color: rgba(255, 255, 255, 0.07);
     --main-button-hover-color: rgba(255, 255, 255, 0.12);
     --main-button-active-color: rgba(255, 255, 255, 0.18);
     --main-input-color: rgba(255, 255, 255, 0.10);
@@ -27,99 +23,99 @@ body[data-theme="glass"] {
     --main-search-hover-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
 }
 
-/* 玻璃材质变量（面板 / 控件两级） */
+/* 玻璃材质变量（深色磨砂：弱高光 + 弱 tint） */
 body[data-theme="glass"] {
     --glass-bg-panel:
-        linear-gradient(135deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.04) 55%, rgba(255, 255, 255, 0.07) 100%);
+        linear-gradient(135deg, rgba(255, 255, 255, 0.045) 0%, rgba(255, 255, 255, 0.015) 55%, rgba(255, 255, 255, 0.03) 100%);
     --glass-bg-control:
-        linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.05) 100%);
+        linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
     --glass-tint:
-        radial-gradient(120% 90% at 15% 0%, rgba(147, 197, 253, 0.14) 0%, transparent 55%),
-        radial-gradient(100% 80% at 85% 100%, rgba(244, 167, 89, 0.08) 0%, transparent 50%);
-    --glass-border: rgba(255, 255, 255, 0.16);
-    --glass-border-soft: rgba(255, 255, 255, 0.10);
-    --glass-inner-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 -1px 0 rgba(255, 255, 255, 0.03);
-    --glass-shadow: 0 16px 48px rgba(0, 0, 0, 0.38), 0 2px 8px rgba(0, 0, 0, 0.22);
+        radial-gradient(120% 90% at 15% 0%, rgba(147, 197, 253, 0.05) 0%, transparent 55%),
+        radial-gradient(100% 80% at 85% 100%, rgba(244, 167, 89, 0.03) 0%, transparent 50%);
+    --glass-border: rgba(255, 255, 255, 0.10);
+    --glass-border-soft: rgba(255, 255, 255, 0.06);
+    --glass-inner-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.07), inset 0 -1px 0 rgba(255, 255, 255, 0.02);
+    --glass-shadow: 0 16px 48px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.30);
 }
 
 /* ---------- 液态玻璃：主要面板（Standard Glass） ---------- */
 body[data-theme="glass"] .mark,
 body[data-theme="glass"] .set {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(13, 11, 19, 0.40);
     background-image: var(--glass-tint), var(--glass-bg-panel);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-inner-highlight), var(--glass-shadow);
-    backdrop-filter: blur(34px) saturate(1.8) brightness(1.06);
-    -webkit-backdrop-filter: blur(34px) saturate(1.8) brightness(1.06);
+    backdrop-filter: blur(28px) saturate(1.4);
+    -webkit-backdrop-filter: blur(28px) saturate(1.4);
 }
 
 /* 面板内 Tab 栏：细分割线（玻璃层次感） */
 body[data-theme="glass"] .mark .tab,
 body[data-theme="glass"] .set .tabs {
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 /* ---------- 液态玻璃：搜索框 / 搜索建议（Controls Glass） ---------- */
 body[data-theme="glass"] .all-search,
 body[data-theme="glass"] #keywords {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(13, 11, 19, 0.40);
     background-image: var(--glass-tint), var(--glass-bg-control);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-inner-highlight), var(--glass-shadow);
-    backdrop-filter: blur(26px) saturate(1.7) brightness(1.05);
-    -webkit-backdrop-filter: blur(26px) saturate(1.7) brightness(1.05);
+    backdrop-filter: blur(24px) saturate(1.4);
+    -webkit-backdrop-filter: blur(24px) saturate(1.4);
 }
 
 /* 搜索框按钮 hover 态 */
 body[data-theme="glass"] .sou form .se:hover,
 body[data-theme="glass"] .sou-button:hover {
-    background-color: rgba(255, 255, 255, 0.10);
+    background-color: rgba(255, 255, 255, 0.08);
 }
 
 /* ---------- 液态玻璃：书签面板（右上角 AnimatedList） ---------- */
 body[data-theme="glass"] #bookmark-panel {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(13, 11, 19, 0.40);
     background-image: var(--glass-tint), var(--glass-bg-panel);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-inner-highlight), var(--glass-shadow);
-    backdrop-filter: blur(34px) saturate(1.8) brightness(1.06);
-    -webkit-backdrop-filter: blur(34px) saturate(1.8) brightness(1.06);
+    backdrop-filter: blur(28px) saturate(1.4);
+    -webkit-backdrop-filter: blur(28px) saturate(1.4);
 }
 
 body[data-theme="glass"] #bookmark-panel .bm-panel-header,
 body[data-theme="glass"] #bookmark-panel .bm-panel-footer {
-    background-color: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.08);
+    background-color: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.06);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
 }
 
-/* 书签条目：半透明白底（非玻璃，保证可读性） */
+/* 书签条目：柔和半透明（深色玻璃上可读） */
 body[data-theme="glass"] #bookmark-panel .bm-item {
-    background-color: rgba(255, 255, 255, 0.09);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10);
+    background-color: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 
 body[data-theme="glass"] #bookmark-panel .bm-item:hover {
-    background-color: rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.12);
     transform: scale(1.01);
 }
 
 body[data-theme="glass"] #bookmark-panel .bm-item.selected {
-    background-color: rgba(255, 255, 255, 0.18);
-    border-color: rgba(244, 167, 89, 0.55);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 0 20px rgba(244, 167, 89, 0.12);
+    background-color: rgba(255, 255, 255, 0.14);
+    border-color: rgba(244, 167, 89, 0.45);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10), 0 0 16px rgba(244, 167, 89, 0.10);
 }
 
 /* 渐变遮罩与毛玻璃同色系（滚动边缘淡出） */
 body[data-theme="glass"] #bookmark-panel .top-gradient {
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.08), transparent);
+    background: linear-gradient(to bottom, rgba(13, 11, 19, 0.55), transparent);
 }
 
 body[data-theme="glass"] #bookmark-panel .bottom-gradient {
-    background: linear-gradient(to top, rgba(255, 255, 255, 0.08), transparent);
+    background: linear-gradient(to top, rgba(13, 11, 19, 0.55), transparent);
 }
 
 /* ---------- 液态玻璃：面板内次级元素（控件层） ---------- */
@@ -137,7 +133,7 @@ body[data-theme="glass"] .quick_add_content {
 body[data-theme="glass"] .quick:hover,
 body[data-theme="glass"] .se_list_div:hover,
 body[data-theme="glass"] .quick_list_div:hover {
-    background-color: rgba(255, 255, 255, 0.16);
+    background-color: rgba(255, 255, 255, 0.12);
     transform: translateY(-1px);
 }
 
@@ -145,14 +141,14 @@ body[data-theme="glass"] .set_blocks_content button,
 body[data-theme="glass"] .se_add_content input,
 body[data-theme="glass"] .quick_add_content input,
 body[data-theme="glass"] .set_blocks_content .but-ordinary {
-    background-color: rgba(255, 255, 255, 0.10);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10);
+    background-color: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 
 body[data-theme="glass"] .set_blocks_content button:hover,
 body[data-theme="glass"] .set_blocks_content .but-ordinary:hover {
-    background-color: rgba(255, 255, 255, 0.18);
+    background-color: rgba(255, 255, 255, 0.14);
 }
 
 /* ============================================================
@@ -206,18 +202,18 @@ body[data-theme="glass"] .set_blocks_content .but-ordinary:hover {
 }
 
 .theme-card-preview.dark {
-    background: linear-gradient(135deg, #16121d 0%, #2a2436 55%, #1c1826 100%);
+    background: linear-gradient(135deg, #120f17 0%, #2a2436 55%, #16121d 100%);
     border: 1px solid #333;
 }
 
-/* 液态玻璃预览：玻璃材质 + 高光 + 光泽 */
+/* 液态玻璃预览：深色磨砂玻璃（弱 tint + 弱高光） */
 .theme-card-preview.glass {
     background:
-        radial-gradient(120% 90% at 15% 0%, rgba(147, 197, 253, 0.35) 0%, transparent 55%),
-        radial-gradient(100% 80% at 85% 100%, rgba(244, 167, 89, 0.18) 0%, transparent 50%),
-        linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.05) 55%, rgba(255, 255, 255, 0.10) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.30);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.30), 0 8px 24px rgba(0, 0, 0, 0.25);
+        radial-gradient(120% 90% at 15% 0%, rgba(147, 197, 253, 0.12) 0%, transparent 55%),
+        radial-gradient(100% 80% at 85% 100%, rgba(244, 167, 89, 0.06) 0%, transparent 50%),
+        linear-gradient(135deg, rgba(13, 11, 19, 0.35) 0%, rgba(255, 255, 255, 0.06) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 8px 24px rgba(0, 0, 0, 0.30);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
 }
@@ -227,7 +223,7 @@ body[data-theme="glass"] .set_blocks_content .but-ordinary:hover {
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, 0.30) 50%, transparent 58%);
+    background: linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, 0.12) 50%, transparent 58%);
     animation: theme-shine 4.5s ease-in-out infinite;
 }
 
@@ -247,6 +243,123 @@ body[data-theme="glass"] .set_blocks_content .but-ordinary:hover {
     font-size: 0.75rem;
     margin-top: 4px;
     line-height: 1.5;
+}
+
+/* ============================================================
+ * 自动切换主题
+ * ============================================================ */
+.theme-auto {
+    margin: 0 16px 24px;
+    padding: 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+body[data-theme="glass"] .theme-auto {
+    background-color: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.theme-auto-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.theme-auto-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--main-text-color);
+}
+
+.theme-auto-desc {
+    font-size: 0.72rem;
+    color: #a6a6a6;
+    flex: 1;
+    min-width: 120px;
+}
+
+/* 开关 */
+.theme-auto-toggle {
+    position: relative;
+    width: 46px;
+    height: 26px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background-color: rgba(255, 255, 255, 0.10);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+    padding: 0;
+}
+
+.theme-auto-toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+    transition: transform 0.25s ease;
+}
+
+.theme-auto-toggle[aria-checked="true"] {
+    background-color: #f4a759;
+    border-color: #f4a759;
+}
+
+.theme-auto-toggle[aria-checked="true"]::after {
+    transform: translateX(20px);
+}
+
+.theme-auto-body {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+}
+
+.theme-auto-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.theme-auto-label {
+    font-size: 0.78rem;
+    color: var(--main-text-color);
+}
+
+.theme-auto-time {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--main-text-color);
+    font-size: 0.8rem;
+    outline: none;
+    font-family: inherit;
+    color-scheme: dark;
+}
+
+.theme-auto-time:focus {
+    border-color: #f4a759;
+}
+
+.theme-auto-time:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.theme-auto-sep {
+    font-size: 0.75rem;
+    color: #a6a6a6;
 }
 
 /* ============================================================
@@ -444,4 +557,434 @@ body[data-theme="glass"] .set_blocks_content .but-ordinary:hover {
         width: 44px;
         height: 44px;
     }
+}
+
+/* ============================================================
+ * SVG 图标系统（Lucide 线条 + simple-icons 品牌 + 首字徽章）
+ * ============================================================ */
+.isvg {
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.isvg use {
+    pointer-events: none;
+}
+
+/* 首字徽章（无品牌 SVG 的引擎 / 自定义引擎）——深色玻璃质感 */
+.ibadge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1em;
+    height: 1em;
+    padding: 0.08em 0.18em;
+    border-radius: 24%;
+    box-sizing: border-box;
+    font-weight: 600;
+    font-style: normal;
+    line-height: 1;
+    color: #ffffff;
+    background:
+        radial-gradient(120% 90% at 20% 0%, rgba(255, 255, 255, 0.14) 0%, transparent 55%),
+        linear-gradient(135deg, rgba(20, 17, 28, 0.85), rgba(38, 32, 50, 0.75));
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10), 0 2px 6px rgba(0, 0, 0, 0.30);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.40);
+}
+
+/* 玻璃主题下徽章更通透 */
+body[data-theme="glass"] .ibadge {
+    background:
+        radial-gradient(120% 90% at 20% 0%, rgba(255, 255, 255, 0.16) 0%, transparent 55%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.04));
+    border-color: rgba(255, 255, 255, 0.18);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 2px 8px rgba(0, 0, 0, 0.30);
+}
+
+/* ============================================================
+ * 网站导航图标（favicon + 彩色首字底）
+ * ============================================================ */
+/* 网站图标容器：品牌色渐变底，favicon 加载成功后覆盖 */
+.q-icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background:
+        radial-gradient(120% 90% at 20% 0%, rgba(255, 255, 255, 0.22) 0%, transparent 55%),
+        linear-gradient(135deg,
+            color-mix(in srgb, var(--qic) 86%, #ffffff 14%),
+            color-mix(in srgb, var(--qic) 52%, #000000 48%));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 2px 6px rgba(0, 0, 0, 0.28);
+}
+
+.q-icon-char {
+    color: #ffffff;
+    font-size: 0.55em;
+    font-weight: 700;
+    line-height: 1;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    user-select: none;
+}
+
+.q-favicon {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+    background-color: #ffffff;
+}
+
+.q-name {
+    font-size: 0.72rem;
+    color: var(--main-text-color);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-shadow: var(--main-text-shadow);
+}
+
+/* 书签面板条目图标复用 */
+.bm-item .q-icon {
+    border-radius: 8px;
+}
+
+.bm-item .q-icon-char {
+    font-size: 0.5em;
+}
+
+.bm-item .q-name {
+    font-size: 0.9rem;
+}
+
+/* 品牌色首字徽章（引擎按钮） */
+.ibadge--brand {
+    color: #ffffff;
+    background:
+        radial-gradient(120% 90% at 20% 0%, rgba(255, 255, 255, 0.28) 0%, transparent 55%),
+        linear-gradient(135deg,
+            color-mix(in srgb, var(--badge-color) 88%, #ffffff 12%),
+            color-mix(in srgb, var(--badge-color) 55%, #000000 45%));
+    border-color: rgba(255, 255, 255, 0.28);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 2px 6px rgba(0, 0, 0, 0.30);
+}
+
+/* ============================================================
+ * 设置页分区（快捷方式 / 书签 上下两区）
+ * ============================================================ */
+.set-section {
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 18px;
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+body[data-theme="glass"] .set-section {
+    background-color: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.set-section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.set-section-title {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--main-text-color);
+}
+
+.set-section-sub {
+    font-size: 0.72rem;
+    color: #a6a6a6;
+}
+
+/* favicon 配置行 */
+.favicon-row {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+}
+
+.favicon-row input {
+    flex: 1;
+    min-width: 0;
+}
+
+.favicon-pick {
+    flex-shrink: 0;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--main-text-color);
+    font-size: 0.78rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.25s ease;
+    user-select: none;
+}
+
+.favicon-pick:hover {
+    background-color: rgba(255, 255, 255, 0.16);
+}
+
+/* ============================================================
+ * 图标库弹窗
+ * ============================================================ */
+.icon-picker-mask {
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    animation: fade 0.2s ease;
+}
+
+.icon-picker {
+    width: 420px;
+    max-width: calc(100vw - 32px);
+    max-height: 78vh;
+    overflow-y: auto;
+    border-radius: 16px;
+    padding: 18px;
+    background-color: #16121d;
+    background-image:
+        radial-gradient(120% 90% at 15% 0%, rgba(147, 197, 253, 0.08) 0%, transparent 55%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10), 0 24px 64px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+}
+
+body[data-theme="glass"] .icon-picker {
+    background-color: rgba(13, 11, 19, 0.55);
+}
+
+.icon-picker-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 12px;
+    position: relative;
+}
+
+.icon-picker-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.icon-picker-sub {
+    font-size: 0.72rem;
+    color: #a6a6a6;
+}
+
+.icon-picker-close {
+    position: absolute;
+    right: 0;
+    top: 0;
+    border: none;
+    background: transparent;
+    color: #a6a6a6;
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 2px 6px;
+}
+
+.icon-picker-close:hover {
+    color: #fff;
+}
+
+.icon-picker-url {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--main-text-color);
+    font-size: 0.82rem;
+    margin-bottom: 12px;
+    outline: none;
+}
+
+.icon-picker-url:focus {
+    border-color: #f4a759;
+}
+
+.icon-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.icon-picker-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 4px;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    outline: none;
+}
+
+.icon-picker-cell:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    transform: translateY(-1px);
+}
+
+.icon-picker-cell.active {
+    border-color: #f4a759;
+    background-color: rgba(244, 167, 89, 0.10);
+}
+
+.icon-picker-cell-name {
+    font-size: 0.68rem;
+    color: var(--main-text-color);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.icon-picker-preview {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #fff;
+}
+
+.icon-picker-preview--badge {
+    background:
+        radial-gradient(120% 90% at 20% 0%, rgba(255, 255, 255, 0.25) 0%, transparent 55%),
+        linear-gradient(135deg,
+            color-mix(in srgb, var(--badge-color) 85%, #fff 15%),
+            color-mix(in srgb, var(--badge-color) 50%, #000 50%));
+}
+
+.icon-picker-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.icon-picker-btn {
+    padding: 7px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background-color: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background-color 0.25s ease;
+}
+
+.icon-picker-btn:hover {
+    background-color: rgba(255, 255, 255, 0.16);
+}
+
+.icon-picker-btn--primary {
+    background-color: #f4a759;
+    border-color: #f4a759;
+    color: #1a1206;
+    font-weight: 600;
+}
+
+.icon-picker-btn--primary:hover {
+    background-color: #ffb76b;
+}
+
+/* 移动端：弹窗网格 3 列 */
+@media (max-width: 640px) {
+    .icon-picker-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* 白底图标容器（si:品牌 / 自定义 URL 图标） */
+.q-icon--plain {
+    background: #ffffff;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* 引擎按钮自定义 favicon 图 */
+.engine-fav {
+    width: 1.2em;
+    height: 1.2em;
+    border-radius: 6px;
+    object-fit: contain;
+    background: #ffffff;
+    vertical-align: middle;
+}
+
+/* 设置面板内部滚动（快捷方式/书签上下分区定位） */
+.set {
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+/* 设置列表空态 */
+.set-list-empty {
+    padding: 18px 10px;
+    text-align: center;
+    color: #a6a6a6;
+    font-size: 0.82rem;
+}
+
+/* 设置列表名称前小图标 */
+.se_list_name,
+.quick_list_div_name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.set-list-icon {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.set-list-icon .q-icon {
+    border-radius: 6px;
+}
+
+.set-list-icon .isvg,
+.set-list-icon .ibadge {
+    font-size: 1.1em;
 }
