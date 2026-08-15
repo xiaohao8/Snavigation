@@ -92,3 +92,88 @@
         padding: 10px 0px !important;
     }
 }
+
+/* ============================================================
+ * 移动端性能优化（消除面板开合卡顿）
+ * ============================================================ */
+@media (max-width: 768px) {
+    /* 关闭毛玻璃：backdrop-filter 在移动端 GPU 开销极大，是开合卡顿主因 */
+    *,
+    .all-search,
+    #keywords,
+    .search-engine,
+    .mark,
+    .set,
+    #bookmark-panel,
+    .icon-picker,
+    .cookie-tip,
+    .theme-auto {
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+    }
+
+    /* 玻璃主题半透明面板在移动端改为纯色兜底，避免透出背景反复重绘 */
+    body[data-theme="glass"] .mark,
+    body[data-theme="glass"] .set,
+    body[data-theme="glass"] #bookmark-panel,
+    body[data-theme="glass"] .all-search,
+    body[data-theme="glass"] #keywords {
+        background-color: #120F17 !important;
+        background-image: none !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    /* 移动端无 hover：关闭全局过渡，减少重渲染时的过渡抖动 */
+    *,
+    a,
+    p {
+        transition: none !important;
+    }
+
+    /* 面板开合动画轻量化（仅透明度，缩短时长，避免大阴影/大面板重绘卡顿） */
+    .mark,
+    .set {
+        animation-duration: 0.4s !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+    }
+}
+
+/* 设置/书签面板在移动端启用惯性滚动，避免内容溢出卡住 */
+@media (max-width: 640px) {
+    .set,
+    .mark {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+    }
+}
+
+/* ============================================================
+ * 超小屏（<= 360px）兜底
+ * ============================================================ */
+@media (max-width: 360px) {
+    #time_text {
+        font-size: 2.2rem;
+    }
+
+    #day {
+        font-size: 0.92rem;
+    }
+
+    .weather {
+        font-size: 0.85rem;
+    }
+
+    /* 搜索框左右留白收窄 */
+    .sou {
+        width: calc(100% - 32px);
+    }
+
+    /* 快捷方式每行 2 列，避免过窄难以点按 */
+    .quick,
+    .quicks {
+        width: 46%;
+        min-width: 46%;
+        max-width: 46%;
+    }
+}

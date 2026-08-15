@@ -52,10 +52,13 @@
     // === 动画循环 ===
     var rafId = null;
     var lastTime = 0;
+    var running = false;
 
     function tick(now) {
         var dt = Math.min((now - lastTime) / 1000, 0.05); // 限制最大步长，避免卡顿时跳变
         lastTime = now;
+
+        var settled = true;
 
         for (var i = 0; i < items.length; i++) {
             var rect = items[i].getBoundingClientRect();
@@ -65,6 +68,10 @@
             var size = itemStates[i].current;
             items[i].style.width = size + 'px';
             items[i].style.height = size + 'px';
+            // 任一项未到达目标或仍有速度 → 仍需继续动画
+            if (Math.abs(size - target) > 0.05 || Math.abs(itemStates[i].velocity) > 0.05) {
+                settled = false;
+            }
         }
 
         var panelTarget = panelHovered === 1 ? maxHeight : CONFIG.panelHeight;
@@ -72,12 +79,23 @@
         if (dockOuter) {
             dockOuter.style.height = panelState.current + 'px';
         }
+        if (Math.abs(panelState.current - panelTarget) > 0.05 || Math.abs(panelState.velocity) > 0.05) {
+            settled = false;
+        }
+
+        // 全部静止后停止 rAF，避免每帧强制重排（移动端开合面板卡顿的主因）
+        if (settled) {
+            rafId = null;
+            running = false;
+            return;
+        }
 
         rafId = requestAnimationFrame(tick);
     }
 
     function start() {
-        if (rafId) cancelAnimationFrame(rafId);
+        if (running) return; // 已在运行则不再重复启动
+        running = true;
         lastTime = performance.now();
         rafId = requestAnimationFrame(tick);
     }
