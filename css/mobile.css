@@ -146,6 +146,30 @@
         -webkit-overflow-scrolling: touch;
         overscroll-behavior: contain;
     }
+
+    /* 设置面板内部固定高度（.set_blocks_content 430px / .set_blocks 340px / .add_content 320px）
+       在窄屏会挤压/错乱：改为内容自适应，统一交给 .set 面板滚动 */
+    .set_blocks,
+    .set_blocks_content,
+    .add_content {
+        height: auto;
+        min-height: 0;
+    }
+
+    .set_blocks_content {
+        margin: 12px;
+    }
+
+    .add_content {
+        overflow-y: visible;
+    }
+
+    /* 设置/书签 tab 文字在窄屏防挤压裁切 */
+    .set .tabs .tab-items,
+    .mark .tab .tab-item {
+        font-size: 0.8rem;
+        padding: 0 2px;
+    }
 }
 
 /* ============================================================

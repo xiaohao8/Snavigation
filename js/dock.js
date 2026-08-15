@@ -101,17 +101,29 @@
     }
 
     // === 鼠标交互 ===
-    dockPanel.addEventListener('mousemove', function (e) {
-        panelHovered = 1;
-        mouseX = e.pageX;
-        start();
-    });
+    // 仅在「可悬停 + 精确指针」设备（桌面鼠标）启用磁性放大/弹簧动画。
+    // 触屏手机上 tap 会触发合成 mousemove 但没有 mouseleave，导致 dock 膨胀(256px)、
+    // 布局错乱 + 持续重排卡顿——移动端改为纯静态按钮栏，点击仍可正常导航。
+    var hoverCapable = false;
+    try {
+        hoverCapable = !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
+    } catch (e) {
+        hoverCapable = false;
+    }
 
-    dockPanel.addEventListener('mouseleave', function () {
-        panelHovered = 0;
-        mouseX = Infinity;
-        start();
-    });
+    if (hoverCapable) {
+        dockPanel.addEventListener('mousemove', function (e) {
+            panelHovered = 1;
+            mouseX = e.pageX;
+            start();
+        });
+
+        dockPanel.addEventListener('mouseleave', function () {
+            panelHovered = 0;
+            mouseX = Infinity;
+            start();
+        });
+    }
 
     // === 键盘可访问（Enter / Space 触发） ===
     items.forEach(function (item, i) {
@@ -168,6 +180,8 @@
         }
     });
 
-    // 初始渲染一次（确保尺寸正确）
-    start();
+    // 初始渲染一次（确保尺寸正确）；移动端不启动弹簧循环，保持纯 CSS 静态尺寸
+    if (hoverCapable) {
+        start();
+    }
 })();
