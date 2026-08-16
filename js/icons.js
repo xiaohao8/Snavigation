@@ -150,7 +150,7 @@
         'ebook.huzerui.com': 'svg',
         'github.com': 'svg',
         'hailuoai.video': 'png',
-        'i.chaoxing.com': 'ico',
+        'i.chaoxing.com': 'png',
         'ke.qq.com': 'svg',
         'kimi.moonshot.cn': 'ico',
         'mail.163.com': 'ico',
@@ -219,6 +219,9 @@
         'jsrun.net': 'png',
         'tool.lu': 'png',
         'www.hongguoduanju.com': 'png',
+        'weread.qq.com': 'png',
+        'www.yuque.com': 'png',
+        'www.wenshushu.cn': 'png',
     };
 
     // Gitee 镜像仓库的 raw 加速地址（国内 CDN：raw.giteeusercontent.com）
