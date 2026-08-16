@@ -33,6 +33,24 @@ window.addEventListener('load', function () {
 
 }, false)
 
+// 快捷方式面板：为每个站点注入 favicon 图标（与书签一致的 Icons.site 渲染）
+// 在 load 后执行，确保 icons.js 已就绪；DOM 为静态 HTML，单次遍历即可。
+function renderShortcutIcons() {
+    if (typeof Icons === 'undefined') return;
+    var cards = document.querySelectorAll('.mark .quicks');
+    for (var i = 0; i < cards.length; i++) {
+        var card = cards[i];
+        if (card.querySelector('.q-icon')) continue; // 已注入则跳过
+        var a = card.querySelector('a');
+        if (!a) continue;
+        var url = a.getAttribute('href');
+        var title = card.getAttribute('title') || (a.textContent || '').trim();
+        // Icons.site(url, title, size) → favicon(dnspod→favicon.im) + 彩色首字底，size=40 适配 96px 卡片
+        a.insertAdjacentHTML('afterbegin', Icons.site(url, title, 40));
+    }
+}
+window.addEventListener('load', renderShortcutIcons, false);
+
 //进入问候
 now = new Date(), hour = now.getHours()
 if (hour < 6) {
