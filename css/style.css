@@ -1018,6 +1018,27 @@ input[type="radio"]:checked+label {
     line-height: 20px;
 }
 
+/* 页脚 Tree-Nation 碳中和徽章（位于版权行上方，居中，不随 .foot 固定高度裁切） */
+.tree-nation {
+    position: absolute;
+    bottom: 34px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    text-align: center;
+    pointer-events: auto;
+}
+.tree-nation iframe {
+    vertical-align: middle;
+}
+@media (max-width: 640px) {
+    .tree-nation {
+        bottom: 30px;
+        transform: translateX(-50%) scale(0.85);
+        transform-origin: bottom center;
+    }
+}
+
 .power {
     color: var(--main-text-color);
     opacity: 0.8;
