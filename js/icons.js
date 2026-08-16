@@ -215,6 +215,10 @@
         'yiyan.baidu.com': 'ico',
         'yuanbao.tencent.com': 'png',
         'zh.z-lib.org': 'svg',
+        'boce.aliyun.com': 'ico',
+        'jsrun.net': 'png',
+        'tool.lu': 'png',
+        'www.hongguoduanju.com': 'png',
     };
 
     // Gitee 镜像仓库的 raw 加速地址（国内 CDN：raw.giteeusercontent.com）
