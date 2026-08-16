@@ -3,7 +3,7 @@
  * ------------------------------------------------------------
  * · 搜索引擎图标：品牌 SVG + 官方品牌色（simple-icons 数据）
  * · 无品牌 SVG（必应/京东/360）与自定义引擎：品牌色首字徽章
- * · 网站快捷方式/书签：favicon（本地预下载 .png/.svg 优先 → favicon.im 回退 → 彩色首字底）
+ * · 网站快捷方式/书签：favicon（本地预下载优先 → Gitee 镜像 raw CDN 回退 → favicon.im → 彩色首字底；页面打开后后台预加载，不等面板打开）
  *   + 彩色首字底（favicon 加载失败时露出）
  * · 功能图标（设置/搜索/编辑/删除等）：Lucide 线条
  * ============================================================ */
@@ -221,11 +221,35 @@
     // 仓库已同步至 https://gitee.com/xiaohao3/Snavigation （分支 master）
     var GITEE_RAW = 'https://gitee.com/xiaohao3/Snavigation/raw/master/img/favicons/';
 
-    // favicon URL：优先本地预下载文件（同域瞬时加载 + 浏览器缓存），
-    // 缺失时由 <img onerror> 回退：本地 → Gitee 镜像(raw CDN) → favicon.im → 隐藏
+    // favicon 主源：本地预下载文件（同域瞬时加载 + 浏览器缓存）
     function faviconUrl(domain) {
         var ext = FAV_MAP[domain] || 'png';
         return 'img/favicons/' + domain + '.' + ext;
+    }
+
+    // favicon 有序回退源：本地 → Gitee 镜像(raw CDN 加速) → favicon.im
+    // 仅对预下载域名提供 Gitee 回退，避免未预下载域名无谓 404 跳转
+    function faviconSources(domain) {
+        var ext = FAV_MAP[domain] || 'png';
+        var arr = ['img/favicons/' + domain + '.' + ext];
+        if (FAV_MAP[domain]) {
+            arr.push(GITEE_RAW + domain + '.' + ext);
+        }
+        arr.push('https://favicon.im/' + domain);
+        return arr;
+    }
+
+    // 供 <img onerror> 调用：按 faviconSources 顺序尝试下一个源，全部失败则隐藏
+    function onFavError(img, domain) {
+        if (!img) return;
+        var sources = faviconSources(domain);
+        var tried = parseInt(img.getAttribute('data-tried') || '0', 10);
+        if (tried < sources.length - 1) {
+            img.setAttribute('data-tried', String(tried + 1));
+            img.src = sources[tried + 1];
+        } else {
+            img.style.display = 'none';
+        }
     }
 
     // 网站图标：favicon 字段优先（si:品牌 / URL / 自动 dnspod）
@@ -254,7 +278,7 @@
         // favicon = URL → 白底 + 自定义图
         if (favicon && favicon.indexOf('http') === 0) {
             return '<span class="q-icon q-icon--plain" style="width:' + w + ';height:' + h + '">'
-                + '<img class="q-favicon" src="' + favicon + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
+                + '<img class="q-favicon" src="' + favicon + '" alt="" onerror="this.style.display=\'none\'">'
                 + '</span>';
         }
 
@@ -264,21 +288,11 @@
         var color = colorOf(title);
         var img = '';
         if (domain) {
-            var fb = faviconUrl(domain);
-            if (FAV_MAP[domain]) {
-                // 已预下载到本地：同域本地 → Gitee 镜像(raw CDN 加速) → favicon.im → 隐藏
-                var gitee = GITEE_RAW + domain + '.' + FAV_MAP[domain];
-                var fim = 'https://favicon.im/' + domain;
-                img = '<img class="q-favicon" src="' + fb + '" alt="" loading="lazy" onerror="'
-                    + 'if(this.src.indexOf(&quot;favicons&quot;)>=0){this.src=&quot;' + gitee + '&quot;;}'
-                    + 'else if(this.src.indexOf(&quot;gitee&quot;)>=0){this.src=&quot;' + fim + '&quot;;}'
-                    + 'else{this.style.display=&quot;none&quot;;}">';
-            } else {
-                // 未预下载：本地(通常 404) → favicon.im → 隐藏（原行为，避免无谓的 Gitee 跳转）
-                img = '<img class="q-favicon" src="' + fb + '" alt="" loading="lazy" onerror="'
-                    + 'if(this.src.indexOf(&quot;favicon.im&quot;)<0){this.src=&quot;https://favicon.im/' + domain + '&quot;;}'
-                    + 'else{this.style.display=&quot;none&quot;;}">';
-            }
+            var sources = faviconSources(domain); // 本地 → Gitee → favicon.im
+            // 不使用 loading="lazy"：快捷方式面板默认隐藏，懒加载会被浏览器一直推迟，
+            // 导致“打开面板才加载”。改为页面打开后由 preloadShortcutIcons 后台预取（非阻塞）。
+            img = '<img class="q-favicon" alt="" src="' + sources[0] + '"'
+                + ' onerror="Icons.onFavError(this,\'' + domain + '\')">';
         }
         return '<span class="q-icon" style="--qic:' + color + ';width:' + w + ';height:' + h + '">'
             + '<span class="q-icon-char">' + ch + '</span>' + img + '</span>';
@@ -298,6 +312,8 @@
         badge: badgeHtml,
         colorOf: colorOf,
         extractDomain: extractDomain,
+        faviconSources: faviconSources,
+        onFavError: onFavError,
         renderInto: renderInto
     };
 })(window);

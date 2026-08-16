@@ -35,6 +35,7 @@ window.addEventListener('load', function () {
 
 // 快捷方式面板：为每个站点注入 favicon 图标（与书签一致的 Icons.site 渲染）
 // 在 load 后执行，确保 icons.js 已就绪；DOM 为静态 HTML，单次遍历即可。
+// 注意：Icons.site 内部已不使用 loading="lazy"，避免隐藏面板导致图标“打开才加载”。
 function renderShortcutIcons() {
     if (typeof Icons === 'undefined') return;
     var cards = document.querySelectorAll('.mark .quicks');
@@ -45,11 +46,41 @@ function renderShortcutIcons() {
         if (!a) continue;
         var url = a.getAttribute('href');
         var title = card.getAttribute('title') || (a.textContent || '').trim();
-        // Icons.site(url, title, size) → favicon(dnspod→favicon.im) + 彩色首字底，size=40 适配 96px 卡片
+        // Icons.site(url, title, size) → favicon(本地→Gitee→favicon.im) + 彩色首字底，size=40 适配 96px 卡片
         a.insertAdjacentHTML('afterbegin', Icons.site(url, title, 40));
     }
 }
 window.addEventListener('load', renderShortcutIcons, false);
+
+// 后台预加载快捷方式 favicon：首屏渲染完成后，利用空闲时间（requestIdleCallback）
+// 静默拉取并缓存所有站点图标，不等用户打开面板。打开面板时图标已就绪，且不阻塞秒开。
+function preloadShortcutIcons() {
+    if (typeof Icons === 'undefined' || !Icons.faviconSources) return;
+    var links = document.querySelectorAll('.mark .quicks a');
+    var seen = {};
+    for (var i = 0; i < links.length; i++) {
+        var d = Icons.extractDomain(links[i].getAttribute('href'));
+        if (!d || seen[d]) continue; // 去重：每个域名只预取一次
+        seen[d] = true;
+        var sources = Icons.faviconSources(d); // 本地 → Gitee → favicon.im
+        var img = new Image();
+        (function (srcs) {
+            var idx = 0;
+            img.onerror = function () {
+                idx++;
+                if (idx < srcs.length) img.src = srcs[idx];
+            };
+            img.src = srcs[0];
+        })(sources);
+    }
+}
+
+// 首屏空闲时后台预取（不阻塞加载）；不支持 requestIdleCallback 时退化为 load 后执行
+if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(preloadShortcutIcons, { timeout: 2500 });
+} else {
+    window.addEventListener('load', preloadShortcutIcons, false);
+}
 
 //进入问候
 now = new Date(), hour = now.getHours()
