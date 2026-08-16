@@ -1018,24 +1018,26 @@ input[type="radio"]:checked+label {
     line-height: 20px;
 }
 
-/* 页脚 Tree-Nation 碳中和徽章（位于版权行上方，居中，不随 .foot 固定高度裁切） */
+/* 页脚 Tree-Nation 碳中和徽章（左下角，缩小显示） */
 .tree-nation {
     position: absolute;
-    bottom: 34px;
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: 10px;
+    left: 10px;
     z-index: 1000;
-    text-align: center;
+    text-align: left;
     pointer-events: auto;
+    transform: scale(0.65);
+    transform-origin: bottom left;
 }
 .tree-nation iframe {
     vertical-align: middle;
 }
 @media (max-width: 640px) {
     .tree-nation {
-        bottom: 30px;
-        transform: translateX(-50%) scale(0.85);
-        transform-origin: bottom center;
+        bottom: 8px;
+        left: 6px;
+        transform: scale(0.55);
+        transform-origin: bottom left;
     }
 }
 
