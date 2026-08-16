@@ -3,7 +3,7 @@
  * ------------------------------------------------------------
  * · 搜索引擎图标：品牌 SVG + 官方品牌色（simple-icons 数据）
  * · 无品牌 SVG（必应/京东/360）与自定义引擎：品牌色首字徽章
- * · 网站快捷方式/书签：favicon（dnspod → favicon.im 多源回退）
+ * · 网站快捷方式/书签：favicon（本地预下载 .png/.svg 优先 → favicon.im 回退 → 彩色首字底）
  *   + 彩色首字底（favicon 加载失败时露出）
  * · 功能图标（设置/搜索/编辑/删除等）：Lucide 线条
  * ============================================================ */
@@ -136,9 +136,96 @@
         return m[1].toLowerCase();
     }
 
-    // favicon URL（主 dnspod，回退 favicon.im）
+    // 本地预下载 favicon 映射：domain -> 扩展名（png/svg/ico/webp）
+    var FAV_MAP = {
+        '10minutemail.net': 'png',
+        'animate.style': 'png',
+        'chat.deepseek.com': 'png',
+        'chat.openai.com': 'webp',
+        'chatglm.cn': 'ico',
+        'cli.im': 'ico',
+        'convertio.co': 'png',
+        'cowtransfer.com': 'png',
+        'dnschecker.org': 'png',
+        'ebook.huzerui.com': 'svg',
+        'github.com': 'svg',
+        'hailuoai.video': 'png',
+        'i.chaoxing.com': 'ico',
+        'ke.qq.com': 'svg',
+        'kimi.moonshot.cn': 'ico',
+        'mail.163.com': 'ico',
+        'mail.aliyun.com': 'ico',
+        'mail.qq.com': 'png',
+        'metaso.cn': 'png',
+        'music.163.com': 'ico',
+        'next.itellyou.cn': 'ico',
+        'open.163.com': 'png',
+        's.threatbook.cn': 'ico',
+        'spline.design': 'png',
+        'stackoverflow.com': 'png',
+        'test.ustc.edu.cn': 'ico',
+        'tieba.baidu.com': 'ico',
+        'tinypng.com': 'png',
+        'tiomg.org': 'svg',
+        'tongyi.aliyun.com': 'png',
+        'tool.chinaz.com': 'ico',
+        'tophub.today': 'png',
+        'undraw.co': 'svg',
+        'v.qq.com': 'png',
+        'vercel.com': 'png',
+        'vocalremover.org': 'ico',
+        'wallhaven.cc': 'ico',
+        'weibo.com': 'ico',
+        'whois.chinaz.com': 'png',
+        'write.imsyy.top': 'svg',
+        'www.aconvert.com': 'ico',
+        'www.bejson.com': 'ico',
+        'www.bilibili.com': 'png',
+        'www.chongbuluo.com': 'ico',
+        'www.dnspod.cn': 'ico',
+        'www.dooccn.com': 'svg',
+        'www.douban.com': 'ico',
+        'www.doubao.com': 'png',
+        'www.douyin.com': 'ico',
+        'www.figma.com': 'png',
+        'www.huya.com': 'ico',
+        'www.iconfont.cn': 'png',
+        'www.icourse163.org': 'png',
+        'www.ilovepdf.com': 'png',
+        'www.iqiyi.com': 'ico',
+        'www.itdog.cn': 'ico',
+        'www.kuaishou.com': 'ico',
+        'www.lanzou.com': 'png',
+        'www.mgtv.com': 'png',
+        'www.mianfeiduanju.com': 'svg',
+        'www.netlify.com': 'png',
+        'www.photopea.com': 'png',
+        'www.processon.com': 'ico',
+        'www.remove.bg': 'svg',
+        'www.tablesgenerator.com': 'png',
+        'www.toolnb.com': 'ico',
+        'www.uooc.net.cn': 'png',
+        'www.ximalaya.com': 'ico',
+        'www.xuetangx.com': 'ico',
+        'www.youku.com': 'png',
+        'www.zhihu.com': 'png',
+        'www.zhihuishu.com': 'ico',
+        'xinghuo.xfyun.cn': 'ico',
+        'y.qq.com': 'png',
+        'yiyan.baidu.com': 'ico',
+        'yuanbao.tencent.com': 'png',
+        'zh.z-lib.org': 'svg',
+    };
+
+    // Gitee 镜像仓库的 raw 加速地址（国内 CDN：raw.giteeusercontent.com）
+    // 仓库已同步至 https://gitee.com/xiaohao3/Snavigation （分支 master）
+    var GITEE_RAW = 'https://gitee.com/xiaohao3/Snavigation/raw/master/img/favicons/';
+
+    // favicon URL：优先本地预下载文件（同域瞬时加载 + 浏览器缓存），
+    // 缺失时由 <img onerror> 回退：本地 → Gitee 镜像(raw CDN) → favicon.im → 隐藏
     function faviconUrl(domain) {
-        return 'https://statics.dnspod.cn/proxy_favicon/_/favicon?domain=' + domain;
+        var ext = FAV_MAP[domain] || 'png';
+        return 'img/favicons/' + domain + '.' + ext;
     }
 
     // 网站图标：favicon 字段优先（si:品牌 / URL / 自动 dnspod）
@@ -178,7 +265,20 @@
         var img = '';
         if (domain) {
             var fb = faviconUrl(domain);
-            img = '<img class="q-favicon" src="' + fb + '" alt="" loading="lazy" onerror="if(this.src.indexOf(&quot;dnspod&quot;)>=0){this.src=&quot;https://favicon.im/' + domain + '&quot;;}else{this.style.display=&quot;none&quot;;}">';
+            if (FAV_MAP[domain]) {
+                // 已预下载到本地：同域本地 → Gitee 镜像(raw CDN 加速) → favicon.im → 隐藏
+                var gitee = GITEE_RAW + domain + '.' + FAV_MAP[domain];
+                var fim = 'https://favicon.im/' + domain;
+                img = '<img class="q-favicon" src="' + fb + '" alt="" loading="lazy" onerror="'
+                    + 'if(this.src.indexOf(&quot;favicons&quot;)>=0){this.src=&quot;' + gitee + '&quot;;}'
+                    + 'else if(this.src.indexOf(&quot;gitee&quot;)>=0){this.src=&quot;' + fim + '&quot;;}'
+                    + 'else{this.style.display=&quot;none&quot;;}">';
+            } else {
+                // 未预下载：本地(通常 404) → favicon.im → 隐藏（原行为，避免无谓的 Gitee 跳转）
+                img = '<img class="q-favicon" src="' + fb + '" alt="" loading="lazy" onerror="'
+                    + 'if(this.src.indexOf(&quot;favicon.im&quot;)<0){this.src=&quot;https://favicon.im/' + domain + '&quot;;}'
+                    + 'else{this.style.display=&quot;none&quot;;}">';
+            }
         }
         return '<span class="q-icon" style="--qic:' + color + ';width:' + w + ';height:' + h + '">'
             + '<span class="q-icon-char">' + ch + '</span>' + img + '</span>';
