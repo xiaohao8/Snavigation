@@ -433,7 +433,8 @@ function keywordReminder() {
                 $("#keywords").css("width", $('.sou').width());
                 $("#keywords").empty().show();
                 $.each(data.s, function (i, val) {
-                    $('#keywords').append(`<div class="keyword" data-id="${i + 1}"><i class='iconfont icon-sousuo'></i>${val}</div>`);
+                    // val 来自百度搜索建议接口（第三方数据），拼 HTML 前必须转义
+                    $('#keywords').append('<div class="keyword" data-id="' + (i + 1) + '"><i class="iconfont icon-sousuo"></i>' + escapeHtml(val) + '</div>');
                 });
                 $("#keywords").attr("data-length", data.s["length"]);
                 $(".keyword").click(function () {
@@ -473,7 +474,8 @@ function searchData() {
     var se_list = getSeList();
     var defaultSe = se_list[se_default];
     if (defaultSe) {
-        $(".search").attr("action", defaultSe["url"]);
+        // action 仅接受 http(s)，历史 cookie 中的危险协议（javascript: 等）回退百度
+        $(".search").attr("action", safeUrl(defaultSe["url"]) || 'https://www.baidu.com/s');
         renderEngineIcon(defaultSe["icon"], defaultSe["title"]);
         $(".wd").attr("name", defaultSe["name"]);
     }
@@ -493,8 +495,12 @@ function seList() {
     var html = "";
     var se_list = getSeList();
     for (var i in se_list) {
-        html += `<div class='se-li' data-url='${se_list[i]["url"]}' data-name='${se_list[i]["name"]}' data-icon='${se_list[i]["icon"]}'>
-        <a class='se-li-text'><i id='icon-sou-list' class='${se_list[i]["icon"]}'></i><span>${se_list[i]["title"]}</span></a></div>`;
+        if (!Object.prototype.hasOwnProperty.call(se_list, i)) continue;
+        var se = se_list[i];
+        if (!se || typeof se !== 'object') continue;
+        var keyEsc = escapeHtml(i);
+        html += `<div class='se-li' data-url='${escapeHtml(se["url"])}' data-name='${escapeHtml(se["name"])}' data-icon='${escapeHtml(se["icon"])}'>
+        <a class='se-li-text'><i id='icon-sou-list' class='${escapeHtml(se["icon"])}'></i><span>${escapeHtml(se["title"])}</span></a></div>`;
     }
     $(".search-engine-list").html(html);
 }
@@ -805,7 +811,8 @@ $(document).ready(function () {
         engineCurrent = keys[engineIndex];
         var se = list[engineCurrent];
         if (!se) return;
-        $(".search").attr("action", se["url"]);
+        // action 仅接受 http(s)，历史 cookie 中的危险协议回退百度
+        $(".search").attr("action", safeUrl(se["url"]) || 'https://www.baidu.com/s');
         $(".wd").attr("name", se["name"]);
         var iconSe = $("#icon-se");
         renderEngineIcon(se["icon"], se["title"]);

@@ -221,8 +221,7 @@ console.log('\n== set.js：setQuickInit 转义 ==');
     ok(listHtml.indexOf('quick_list_div') !== -1, '列表结构完整');
 }
 
-// ---------- 5. 编辑/覆盖逻辑 ----------
-console.log('\n== set.js：编辑与覆盖 key 处理 ==');
+// ---------- 5. 编辑/覆盖逻辑 ----------console.log('\n== set.js：编辑与覆盖 key 处理 ==');
 {
     const ctx = makeCtx();
     ctx.Cookies.set('quick_list', JSON.stringify({
@@ -239,6 +238,53 @@ console.log('\n== set.js：编辑与覆盖 key 处理 ==');
     }
     ok(list['1'] === undefined, '覆盖确认后旧序号被移除');
     ok(list['7'].title === 'B2', '新序号内容已覆盖');
+}
+
+// ---------- 6. 搜索建议转义 + 搜索 action 安全 ----------
+console.log('\n== set.js：keywordReminder 转义 / searchData safeUrl ==');
+{
+    const ctx = makeCtx();
+    // 捕获 #keywords 的 append 内容
+    let kwHtml = '';
+    let lastAction = '';
+    const $ = (sel) => {
+        const el = {
+            ready: () => el,
+            html: (v) => (v !== undefined ? (kwHtml = v, el) : el),
+            val: (v) => { if (v === undefined && sel === '.wd') return '测试'; return v === undefined ? '' : el; },
+            attr: (k, v) => { if (v !== undefined) { if (sel === '.search') lastAction = v; return el; } return sel; },
+            css: () => el, show: () => el, hide: () => el, click: () => el, on: () => el,
+            trigger: () => el, addClass: () => el, removeClass: () => el, eq: () => el,
+            siblings: () => el, is: () => false, has: () => [], empty: () => el,
+            width: () => 300,
+            fadeIn: () => el, fadeOut: () => el, append: (v) => { kwHtml += v; return el; },
+        };
+        return el;
+    };
+    $.trim = (s) => String(s || '').trim();
+    $.each = (a, fn) => { if (a) for (let i = 0; i < a.length; i++) fn(i, a[i]); };
+    let ajaxOpts = null;
+    $.ajax = (o) => { ajaxOpts = o; };
+    ctx.$ = $;
+    load(ctx, 'js/set.js');
+
+    // keywordReminder：模拟百度接口返回恶意建议
+    ctx.Cookies.set('se_list', JSON.stringify({ '1': { title: '百度', url: 'https://www.baidu.com/s', name: 'wd' } }));
+    ctx.keywordReminder();
+    ajaxOpts.success({ s: ['<img src=x onerror=alert(1)>', '正常词'] });
+    ok(kwHtml.indexOf('&lt;img src=x') !== -1, '恶意建议被转义');
+    ok(kwHtml.indexOf('<img src=x') === -1, '恶意建议未作为 HTML 注入');
+    ok(kwHtml.indexOf('正常词') !== -1, '正常建议正常渲染');
+
+    // searchData：历史 cookie 含 javascript: 协议 → 回退百度
+    ctx.Cookies.set('se_default', '1');
+    ctx.Cookies.set('se_list', JSON.stringify({ '1': { title: '坏引擎', url: 'javascript:alert(1)', name: 'q' } }));
+    lastAction = '';
+    ctx.searchData();
+    ok(lastAction === 'https://www.baidu.com/s', 'javascript: action 回退百度');
+    ctx.Cookies.set('se_list', JSON.stringify({ '1': { title: '好引擎', url: 'https://ok.com/s', name: 'q' } }));
+    ctx.searchData();
+    ok(lastAction === 'https://ok.com/s', '合法 https action 正常设置');
 }
 
 console.log('\n结果: ' + pass + ' 通过, ' + fail + ' 失败');

@@ -855,10 +855,15 @@ input[type="number"] {
 }
 
 /*快捷方式和搜索引擎设置*/
-.quick_list,
-.se_list {
+.quick_list {
     height: 260px;
     overflow-y: auto;
+}
+
+/* 搜索引擎列表：自适应高度显示全部引擎（长内容由 .set 面板 overflow-y:auto 统一滚动） */
+.se_list {
+    height: auto;
+    overflow-y: visible;
 }
 
 .quick_list_table,
