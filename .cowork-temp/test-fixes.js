@@ -150,42 +150,65 @@ console.log('\n== set.js：getXxxList 副本 / 校验工具 ==');
     ok(ctx.bg_img_preinstall['type'] === '1', '壁纸预装配置未被污染');
 }
 
-// ---------- 3. quickData 渲染（XSS 转义 + 非法条目过滤） ----------
-console.log('\n== set.js：quickData 渲染 ==');
+// ---------- 3. quickData 分类渲染（XSS 转义 + 非法条目过滤 + 按 cat 分组） ----------
+console.log('\n== set.js：quickData 分类渲染 ==');
 {
     const ctx = makeCtx();
-    // 捕获 .quick-all 的 html 输出
-    let lastHtml = '';
+    // 模拟 8 个分类容器（.mark .products .mainCont > .quick-alls）
+    const boxes = [];
+    for (let c = 0; c < 8; c++) {
+        boxes.push({ html: '', parentNode: { removeChild() {} }, querySelector: function (sel) {
+            if (sel === '.user-quicks') return null; // 首次无旧用户区
+            return null;
+        }, insertAdjacentHTML: function (pos, html) { this.html += html; } });
+    }
+    ctx.document.querySelectorAll = function (sel) {
+        if (sel === '.mark .products .mainCont') return boxes.map(b => ({ querySelector: (s) => s === '.quick-alls' ? b : null }));
+        return [];
+    };
     const $ = (sel) => {
         const el = {
-            ready: () => el,
-            html: (v) => { if (v !== undefined) lastHtml = v; return el; },
-            val: () => '', attr: () => el, text: () => el, css: () => el,
-            show: () => el, hide: () => el, click: () => el, on: () => el,
-            trigger: () => el, addClass: () => el, removeClass: () => el,
-            eq: () => el, siblings: () => el, is: () => false, has: () => [],
-            empty: () => el, fadeIn: () => el, fadeOut: () => el, append: () => el,
+            ready: () => el, html: (v) => el, val: (v) => (v === undefined ? '' : el),
+            attr: () => el, text: () => el, css: () => el, show: () => el, hide: () => el,
+            click: () => el, on: () => el, trigger: () => el, addClass: () => el,
+            removeClass: () => el, eq: () => el, siblings: () => el, is: () => false,
+            has: () => [], empty: () => el, fadeIn: () => el, fadeOut: () => el, append: () => el,
         };
         return el;
     };
     ctx.$ = $;
     ctx.Cookies.set('quick_list', JSON.stringify({
         '1': { title: '正常站', url: 'https://ok.com/' },
-        '2': { title: '<img src=x onerror=alert(9)>', url: 'https://xss.com/' },
+        '2': { title: '<img src=x onerror=alert(9)>', url: 'https://xss.com/', cat: 1 },
         '3': { title: '坏协议', url: 'javascript:alert(1)' },
         '4': { title: '', url: 'https://empty-title.com/' },
         '5': null,
+        '6': { title: 'AI站', url: 'https://ai.com/', cat: 1 },
+        '7': { title: '工具站', url: 'https://tool.com/', cat: 2 },
     }));
     load(ctx, 'js/icons.js');
     load(ctx, 'js/set.js');
     ctx.quickData();
-    ok(lastHtml.indexOf('正常站') !== -1, '合法条目正常渲染');
-    ok(lastHtml.indexOf('&lt;img src=x') !== -1, '恶意标题被转义');
-    ok(lastHtml.indexOf('<img src=x') === -1 && lastHtml.indexOf('<span class="q-name">&lt;img') !== -1, '标题注入脚本未执行（仅文本）');
-    ok(lastHtml.indexOf('javascript:') === -1, 'javascript: 条目被过滤');
-    ok(lastHtml.indexOf('empty-title') === -1, '空标题条目被过滤');
-    ok(lastHtml.indexOf('set-quick') !== -1, '「添加」按钮仍渲染');
-    ok(lastHtml.indexOf('rel="noopener noreferrer"') !== -1, '外链带 noopener');
+    const cat0 = boxes[0].html, cat1 = boxes[1].html, cat2 = boxes[2].html, cat3 = boxes[3].html;
+    ok(cat0.indexOf('正常站') !== -1, '无 cat 条目归入「常用」(0)');
+    ok(cat1.indexOf('&lt;img src=x') !== -1, '恶意标题被转义（渲染在 cat=1 分类）');
+    ok(cat1.indexOf('<img src=x') === -1, '标题注入脚本未执行（仅文本）');
+    ok(cat0.indexOf('javascript:') === -1, 'javascript: 条目被过滤');
+    ok(cat0.indexOf('empty-title') === -1, '空标题条目被过滤');
+    ok(cat0.indexOf('set-quick-add') !== -1 && cat0.indexOf('data-cat="0"') !== -1, '「常用」添加按钮带分类');
+    ok(cat1.indexOf('AI站') !== -1 && cat1.indexOf('data-cat="1"') !== -1, 'cat=1 条目渲染到 AI 分类');
+    ok(cat2.indexOf('工具站') !== -1 && cat2.indexOf('data-cat="2"') !== -1, 'cat=2 条目渲染到 工具 分类');
+    ok(cat3.indexOf('set-quick-add') !== -1 && cat3.indexOf('data-cat="3"') !== -1, '空分类也渲染「添加」按钮（预选该分类）');
+    ok(boxes[0].html.indexOf('rel="noopener noreferrer"') !== -1, '外链带 noopener');
+
+    // 预装数据分类分布
+    const dist = {};
+    Object.keys(ctx.quick_list_preinstall).forEach(k => {
+        const c = ctx.quick_list_preinstall[k].cat;
+        dist[c] = (dist[c] || 0) + 1;
+    });
+    ok(dist[0] >= 2 && dist[4] >= 6 && dist[2] >= 10 && dist[6] >= 6, '预装 33 项已分配分类（常用/开发/工具/学习）');
+    ok(Object.keys(dist).length >= 5, '预装分类覆盖多个 tab');
 }
 
 // ---------- 4. setQuickInit 渲染转义 ----------
