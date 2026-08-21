@@ -82,6 +82,16 @@
         return COLOR_POOL[hashStr(name) % COLOR_POOL.length];
     }
 
+    // HTML / 属性转义：siteIcon / engineIcon 的所有用户输入（title/url/favicon）必须先转义
+    function esc(s) {
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     // 渲染 SVG 图标字符串
     // name: 'baidu' | 'settings' | 'ic-xxx'；color: 品牌色（默认 currentColor）
     function svgIcon(name, size, color) {
@@ -96,7 +106,7 @@
         }
         var style = 'width:' + size + ';height:' + size;
         if (color) style += ';color:' + color;
-        return '<svg class="isvg" style="' + style + '" aria-hidden="true"><use href="#' + id + '"/></svg>';
+        return '<svg class="isvg" style="' + style + '" aria-hidden="true"><use href="#' + esc(id) + '"/></svg>';
     }
 
     // 首字徽章（品牌色底 或 深色玻璃）
@@ -105,13 +115,14 @@
         size = size || '1em';
         var style = 'font-size:' + size + ';';
         if (color) style += '--badge-color:' + color + ';';
-        return '<span class="ibadge ibadge--' + (color ? 'brand' : 'glass') + '" style="' + style + '">' + ch + '</span>';
+        return '<span class="ibadge ibadge--' + (color ? 'brand' : 'glass') + '" style="' + style + '">' + esc(ch) + '</span>';
     }
 
     // 引擎图标：si:品牌 / URL 配置优先，否则用原 iconfont class
     function engineIcon(iconClass, title) {
+        iconClass = String(iconClass || '');
         // 1) 显式配置：si:品牌 → 品牌 SVG
-        if (iconClass && iconClass.indexOf('si:') === 0) {
+        if (iconClass.indexOf('si:') === 0) {
             var id = iconClass.slice(3);
             for (var t in BRAND_ICONS) {
                 if (BRAND_ICONS[t].id === id) {
@@ -120,12 +131,12 @@
             }
             return badgeHtml(id.charAt(0).toUpperCase(), '1em', BADGE_COLORS[id] || '#888888');
         }
-        // 2) 显式配置：图标 URL → img
-        if (iconClass && iconClass.indexOf('http') === 0) {
-            return '<img class="engine-fav" src="' + iconClass + '" alt="" onerror="this.style.display=\'none\'">';
+        // 2) 显式配置：图标 URL → img（转义防属性注入）
+        if (iconClass.indexOf('http') === 0) {
+            return '<img class="engine-fav" src="' + esc(iconClass) + '" alt="" onerror="this.style.display=\'none\'">';
         }
         // 3) 默认：原 iconfont class（icon-baidu 等）
-        return '<i class="' + (iconClass || 'iconfont icon-wangluo') + '"></i>';
+        return '<i class="' + esc(iconClass || 'iconfont icon-wangluo') + '"></i>';
     }
 
     // 提取域名（含二级域：github.com、www.baidu.com → baidu.com）
@@ -260,13 +271,16 @@
     }
 
     // 网站图标：favicon 字段优先（si:品牌 / URL / 自动 dnspod）
-    // 返回：<span class="q-icon" style="--qic:#色"><span class="q-icon-char">首字</span><img class="q-favicon" src="..." onerror="..."></span>
+    // 返回：<span class="q-icon" style="--qic:#色"><span class="q-icon-char">首字</span><img class="q-favicon" src="..." data-domain="..."></span>
     function siteIcon(url, title, size, favicon) {
         size = size || 36;
         var w = size + 'px', h = size + 'px';
+        favicon = String(favicon || '');
+        title = String(title || '');
+        url = String(url || '');
 
-        // favicon = si:品牌 → 白底 + 品牌 SVG
-        if (favicon && favicon.indexOf('si:') === 0) {
+        // favicon = si:品牌 → 白底 + 品牌 SVG（id 转义防注入）
+        if (favicon.indexOf('si:') === 0) {
             var id = favicon.slice(3);
             var color = '#888888';
             for (var t in BRAND_ICONS) {
@@ -277,15 +291,15 @@
             if (BRAND_ICONS['必应'] && id === 'bing') {
                 inner = '<span class="q-icon-char" style="font-size:0.5em">B</span>';
             } else {
-                inner = '<svg class="isvg" style="width:60%;height:60%;color:' + color + '"><use href="#ic-' + id + '"/></svg>';
+                inner = '<svg class="isvg" style="width:60%;height:60%;color:' + color + '"><use href="#ic-' + esc(id) + '"/></svg>';
             }
             return '<span class="q-icon q-icon--plain" style="width:' + w + ';height:' + h + '">' + inner + '</span>';
         }
 
-        // favicon = URL → 白底 + 自定义图
-        if (favicon && favicon.indexOf('http') === 0) {
+        // favicon = URL → 白底 + 自定义图（转义防属性注入）
+        if (favicon.indexOf('http') === 0) {
             return '<span class="q-icon q-icon--plain" style="width:' + w + ';height:' + h + '">'
-                + '<img class="q-favicon" src="' + favicon + '" alt="" onerror="this.style.display=\'none\'">'
+                + '<img class="q-favicon" src="' + esc(favicon) + '" alt="" onerror="this.style.display=\'none\'">'
                 + '</span>';
         }
 
@@ -298,12 +312,21 @@
             var sources = faviconSources(domain); // 本地 → Gitee → favicon.im
             // 不使用 loading="lazy"：快捷方式面板默认隐藏，懒加载会被浏览器一直推迟，
             // 导致“打开面板才加载”。改为页面打开后由 preloadShortcutIcons 后台预取（非阻塞）。
-            img = '<img class="q-favicon" alt="" src="' + sources[0] + '"'
-                + ' onerror="Icons.onFavError(this,\'' + domain + '\')">';
+            // 域名通过 data-domain 传给全局错误委托处理，不再拼接内联 onerror，杜绝注入。
+            img = '<img class="q-favicon" alt="" src="' + esc(sources[0]) + '" data-domain="' + esc(domain) + '">';
         }
         return '<span class="q-icon" style="--qic:' + color + ';width:' + w + ';height:' + h + '">'
-            + '<span class="q-icon-char">' + ch + '</span>' + img + '</span>';
+            + '<span class="q-icon-char">' + esc(ch) + '</span>' + img + '</span>';
     }
+
+    // favicon 加载失败委托（捕获阶段）：error 事件不冒泡，但会走捕获路径。
+    // 用 data-domain 代替内联 onerror，彻底消除用户数据注入事件属性字符串的可能。
+    document.addEventListener('error', function (e) {
+        var t = e.target;
+        if (t && t.tagName === 'IMG' && t.classList && t.classList.contains('q-favicon')) {
+            Icons.onFavError(t, t.getAttribute('data-domain'));
+        }
+    }, true);
 
     // 功能图标渲染进元素
     function renderInto(el, name, size) {

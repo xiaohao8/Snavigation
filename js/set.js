@@ -231,21 +231,55 @@ var quick_list_preinstall = {
     }
 };
 
+// ===== 数据安全工具 =====
+
+// 深拷贝预装数据：getXxxList 一律返回副本，
+// 防止调用方就地增删改时污染内置默认列表（否则「重置」无法恢复真正的默认值）
+function cloneDefaults(obj) {
+    try {
+        return JSON.parse(JSON.stringify(obj));
+    } catch (e) {
+        return obj;
+    }
+}
+
+// HTML 转义：所有来自 cookie / 表单的用户数据拼入 HTML 前必须转义，防止存储型 XSS
+function escapeHtml(str) {
+    return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+// URL 规范化：仅允许 http/https 且非空，阻断 javascript: / data: 等危险协议
+function safeUrl(url) {
+    url = String(url == null ? '' : url).trim();
+    return /^https?:\/\/\S+$/i.test(url) ? url : '';
+}
+
+// 解析 cookie 中的 JSON 对象；解析失败或形状不对（null/数组/标量）返回 null
+function parseListObj(raw) {
+    if (!raw) return null;
+    try {
+        var obj = JSON.parse(raw);
+        if (obj && typeof obj === 'object' && !Array.isArray(obj)) return obj;
+    } catch (e) {}
+    return null;
+}
+
 // 获取搜索引擎列表
 function getSeList() {
-    var se_list_local = Cookies.get('se_list');
-    if (se_list_local && se_list_local !== "{}") {
-        try {
-            return JSON.parse(se_list_local);
-        } catch (e) {
-            // cookie 数据损坏时重置为默认
-            setSeList(se_list_preinstall);
-            return se_list_preinstall;
-        }
-    } else {
-        setSeList(se_list_preinstall);
-        return se_list_preinstall;
+    var raw = Cookies.get('se_list');
+    if (raw && raw !== "{}") {
+        var parsed = parseListObj(raw);
+        if (parsed) return parsed;
     }
+    // cookie 缺失 / 损坏时重置为默认（返回副本）
+    var defaults = cloneDefaults(se_list_preinstall);
+    setSeList(defaults);
+    return defaults;
 }
 
 // 设置搜索引擎列表
@@ -315,19 +349,15 @@ function bgSetBing(idx) {
 
 // 获取背景图片
 function getBgImg() {
-    var bg_img_local = Cookies.get('bg_img');
-    if (bg_img_local && bg_img_local !== "{}") {
-        try {
-            return JSON.parse(bg_img_local);
-        } catch (e) {
-            // cookie 数据损坏时重置为默认
-            setBgImg(bg_img_preinstall);
-            return bg_img_preinstall;
-        }
-    } else {
-        setBgImg(bg_img_preinstall);
-        return bg_img_preinstall;
+    var raw = Cookies.get('bg_img');
+    if (raw && raw !== "{}") {
+        var parsed = parseListObj(raw);
+        if (parsed) return parsed;
     }
+    // cookie 缺失 / 损坏时重置为默认（返回副本）
+    var defaults = cloneDefaults(bg_img_preinstall);
+    setBgImg(defaults);
+    return defaults;
 }
 
 // 设置背景图片
@@ -478,19 +508,23 @@ function setSeInit() {
     var icPencil = '<i class="iconfont icon-xiugai"></i>';
     var icTrash = '<i class="iconfont icon-delete"></i>';
     for (var i in se_list) {
+        if (!Object.prototype.hasOwnProperty.call(se_list, i)) continue;
         var se = se_list[i];
-        var listIcon = typeof Icons !== 'undefined' ? '<span class="set-list-icon">' + Icons.engine(se["icon"], se["title"]) + '</span>' : '';
-        var tr = `<div class='se_list_div'><div class='se_list_num'>${i}</div>`;
+        if (!se || typeof se !== 'object') continue;
+        var keyEsc = escapeHtml(i);
+        var title = String(se["title"] || '');
+        var listIcon = typeof Icons !== 'undefined' ? '<span class="set-list-icon">' + Icons.engine(se["icon"], title) + '</span>' : '';
+        var tr = `<div class='se_list_div'><div class='se_list_num'>${keyEsc}</div>`;
         if (i === se_default) {
             tr = `<div class='se_list_div'><div class='se_list_num'>${icHome}</div>`;
         }
-        tr += `<div class='se_list_name'>${listIcon}${se["title"]}</div>
+        tr += `<div class='se_list_name'>${listIcon}${escapeHtml(title)}</div>
         <div class='se_list_button'>
-        <button class='set_se_default' value='${i}' style='border-radius: 8px 0px 0px 8px;'>
+        <button class='set_se_default' value='${keyEsc}' style='border-radius: 8px 0px 0px 8px;'>
         ${icHome}</button>
-        <button class='edit_se' value='${i}'>
+        <button class='edit_se' value='${keyEsc}'>
         ${icPencil}</button>
-        <button class='delete_se' value='${i}' style='border-radius: 0px 8px 8px 0px;'>
+        <button class='delete_se' value='${keyEsc}' style='border-radius: 0px 8px 8px 0px;'>
         ${icTrash}</button></div>
         </div>`;
         html += tr;
@@ -500,19 +534,15 @@ function setSeInit() {
 
 // 获取快捷方式列表
 function getQuickList() {
-    var quick_list_local = Cookies.get('quick_list');
-    if (quick_list_local && quick_list_local !== "{}") {
-        try {
-            return JSON.parse(quick_list_local);
-        } catch (e) {
-            // cookie 数据损坏时重置为默认
-            setQuickList(quick_list_preinstall);
-            return quick_list_preinstall;
-        }
-    } else {
-        setQuickList(quick_list_preinstall);
-        return quick_list_preinstall;
+    var raw = Cookies.get('quick_list');
+    if (raw && raw !== "{}") {
+        var parsed = parseListObj(raw);
+        if (parsed) return parsed;
     }
+    // cookie 缺失 / 损坏时重置为默认（返回副本）
+    var defaults = cloneDefaults(quick_list_preinstall);
+    setQuickList(defaults);
+    return defaults;
 }
 
 // 设置快捷方式列表
@@ -528,15 +558,7 @@ function setQuickList(quick_list) {
 
 // 获取书签列表（用户完全自建，与快捷方式分离）
 function getBookmarkList() {
-    var list_local = Cookies.get('bookmark_list');
-    if (list_local && list_local !== "{}") {
-        try {
-            return JSON.parse(list_local);
-        } catch (e) {
-            return {};
-        }
-    }
-    return {};
+    return parseListObj(Cookies.get('bookmark_list')) || {};
 }
 
 // 设置书签列表
@@ -555,14 +577,20 @@ function quickData() {
     var html = "";
     var quick_list = getQuickList();
     for (var i in quick_list) {
+        if (!Object.prototype.hasOwnProperty.call(quick_list, i)) continue;
         var q = quick_list[i];
-        var iconHtml = typeof Icons !== 'undefined' ? Icons.site(q['url'], q['title'], 32, q['icon']) : '';
-        html += `<div class="quick">
-                    <a href="${q['url']}" target="_blank">${iconHtml}<span class="q-name">${q['title']}</span></a>
-                </div>`;
+        if (!q || typeof q !== 'object') continue;
+        var href = safeUrl(q['url']);
+        var title = String(q['title'] || '').trim();
+        // 仅渲染合法条目：非 http(s) 地址或空名称不展示在首页（可在设置中编辑/删除）
+        if (!href || !title) continue;
+        var iconHtml = typeof Icons !== 'undefined' ? Icons.site(href, title, 32, q['icon']) : '';
+        html += '<div class="quick">'
+            + '<a href="' + escapeHtml(href) + '" target="_blank" rel="noopener noreferrer">'
+            + iconHtml + '<span class="q-name">' + escapeHtml(title) + '</span></a></div>';
     }
     var icPlus = '<i class="iconfont icon-tianjia-"></i>';
-    $(".quick-all").html(html + `<div class="quick"><a id="set-quick">${icPlus}<span class="q-name">添加</span></a></div>`);
+    $(".quick-all").html(html + '<div class="quick"><a id="set-quick">' + icPlus + '<span class="q-name">添加</span></a></div>');
 }
 
 // 设置-快捷方式加载
@@ -572,16 +600,20 @@ function setQuickInit() {
     var icPencil = typeof Icons !== 'undefined' ? Icons.ui('pencil') : '<i class="iconfont icon-xiugai"></i>';
     var icTrash = typeof Icons !== 'undefined' ? Icons.ui('trash') : '<i class="iconfont icon-delete"></i>';
     for (var i in quick_list) {
+        if (!Object.prototype.hasOwnProperty.call(quick_list, i)) continue;
         var q = quick_list[i];
-        var listIcon = typeof Icons !== 'undefined' ? '<span class="set-list-icon">' + Icons.site(q['url'], q['title'], 22, q['icon']) + '</span>' : '';
+        if (!q || typeof q !== 'object') continue;
+        var keyEsc = escapeHtml(i);
+        var title = String(q['title'] || '');
+        var listIcon = typeof Icons !== 'undefined' ? '<span class="set-list-icon">' + Icons.site(q['url'], title, 22, q['icon']) + '</span>' : '';
         tr = `
         <div class='quick_list_div'>
-            <div class='quick_list_div_num'>${i}</div>
-            <div class='quick_list_div_name'>${listIcon}${q['title']}</div>
+            <div class='quick_list_div_num'>${keyEsc}</div>
+            <div class='quick_list_div_name'>${listIcon}${escapeHtml(title)}</div>
             <div class='quick_list_div_button'>
-                <button class='edit_quick' value='${i}' style='border-radius: 8px 0px 0px 8px;'>
+                <button class='edit_quick' value='${keyEsc}' style='border-radius: 8px 0px 0px 8px;'>
                 ${icPencil}</button>
-                <button class='delete_quick' value='${i}' style='border-radius: 0px 8px 8px 0px;'>
+                <button class='delete_quick' value='${keyEsc}' style='border-radius: 0px 8px 8px 0px;'>
                 ${icTrash}</button>
             </div>
         </div>`;
@@ -600,16 +632,20 @@ function setBookmarkInit() {
         html = '<div class="set-list-empty">暂无书签，点击上方「新增」添加你的收藏</div>';
     } else {
         for (var i in list) {
+            if (!Object.prototype.hasOwnProperty.call(list, i)) continue;
             var bm = list[i];
-            var listIcon = typeof Icons !== 'undefined' ? '<span class="set-list-icon">' + Icons.site(bm['url'], bm['title'], 22, bm['icon']) + '</span>' : '';
+            if (!bm || typeof bm !== 'object') continue;
+            var keyEsc = escapeHtml(i);
+            var title = String(bm['title'] || '');
+            var listIcon = typeof Icons !== 'undefined' ? '<span class="set-list-icon">' + Icons.site(bm['url'], title, 22, bm['icon']) + '</span>' : '';
             tr = `
             <div class='quick_list_div'>
-                <div class='quick_list_div_num'>${i}</div>
-                <div class='quick_list_div_name'>${listIcon}${bm['title']}</div>
+                <div class='quick_list_div_num'>${keyEsc}</div>
+                <div class='quick_list_div_name'>${listIcon}${escapeHtml(title)}</div>
                 <div class='quick_list_div_button'>
-                    <button class='edit_bookmark' value='${i}' style='border-radius: 8px 0px 0px 8px;'>
+                    <button class='edit_bookmark' value='${keyEsc}' style='border-radius: 8px 0px 0px 8px;'>
                     ${icPencil}</button>
-                    <button class='delete_bookmark' value='${i}' style='border-radius: 0px 8px 8px 0px;'>
+                    <button class='delete_bookmark' value='${keyEsc}' style='border-radius: 0px 8px 8px 0px;'>
                     ${icTrash}</button>
                 </div>
             </div>`;
@@ -948,7 +984,8 @@ $(document).ready(function () {
     });
 
     // 快捷方式添加按钮点击（首页快捷方式页 → 定位到设置-快捷方式区上半部分）
-    $("#set-quick").click(function () {
+    // 用事件委托：quickData() 每次重渲染都会重建 #set-quick 节点，直接绑定会丢失
+    $(document).on('click', '#set-quick', function () {
         openQuickAdd();
     });
 
@@ -995,9 +1032,9 @@ $(document).ready(function () {
     $(".se_add_save").click(function () {
         var key_inhere = $(".se_add_content input[name='key_inhere']").val();
         var key = $(".se_add_content input[name='key']").val();
-        var title = $(".se_add_content input[name='title']").val();
-        var url = $(".se_add_content input[name='url']").val();
-        var name = $(".se_add_content input[name='name']").val();
+        var title = $(".se_add_content input[name='title']").val().trim();
+        var url = $(".se_add_content input[name='url']").val().trim();
+        var name = $(".se_add_content input[name='name']").val().trim();
         // 图标：表单可配置（留空则自定义引擎默认走首字徽章，旧数据兼容 icon-wangluo）
         var icon = $(".se_add_content input[name='icon']").val() || '';
 
@@ -1009,6 +1046,14 @@ $(document).ready(function () {
             });
             return;
         }
+        if (!title || !url || !name) {
+            iziToast.show({ timeout: 2000, message: '请填写搜索引擎名称、网址与字段名' });
+            return;
+        }
+        if (!safeUrl(url)) {
+            iziToast.show({ timeout: 2000, message: '请输入以 http 或 https 开头的网址' });
+            return;
+        }
 
         var se_list = getSeList();
 
@@ -1018,6 +1063,10 @@ $(document).ready(function () {
                 message: '搜索引擎 ' + key + ' 已有数据，是否覆盖？',
                 buttons: [
                     ['<button>确认</button>', function (instance, toast) {
+                        // 覆盖时若改了序号，旧序号条目一并移除，避免残留脏数据
+                        if (key_inhere && key !== key_inhere) {
+                            delete se_list[key_inhere];
+                        }
                         se_list[key] = {
                             title: title,
                             url: url,
@@ -1080,12 +1129,15 @@ $(document).ready(function () {
 
         var se_list = getSeList();
         var key = $(this).val();
+        var se = se_list[key];
+        // cookie 数据损坏（条目非对象）时忽略，避免 TypeError 中断
+        if (!se || typeof se !== 'object') return;
         $(".se_add_content input[name='key_inhere']").val(key);
         $(".se_add_content input[name='key']").val(key);
-        $(".se_add_content input[name='title']").val(se_list[key]["title"]);
-        $(".se_add_content input[name='url']").val(se_list[key]["url"]);
-        $(".se_add_content input[name='name']").val(se_list[key]["name"]);
-        $(".se_add_content input[name='icon']").val(se_list[key]["icon"] || '');
+        $(".se_add_content input[name='title']").val(se["title"] || '');
+        $(".se_add_content input[name='url']").val(se["url"] || '');
+        $(".se_add_content input[name='name']").val(se["name"] || '');
+        $(".se_add_content input[name='icon']").val(se["icon"] || '');
 
         //隐藏列表
         hideSe();
@@ -1135,7 +1187,7 @@ $(document).ready(function () {
             message: '现有搜索引擎数据将被清空',
             buttons: [
                 ['<button>确认</button>', function (instance, toast) {
-                    setSeList(se_list_preinstall);
+                    setSeList(cloneDefaults(se_list_preinstall));
                     Cookies.set('se_default', 1, {
                         expires: 36500
                     });
@@ -1172,8 +1224,8 @@ $(document).ready(function () {
     $(".quick_add_save").click(function () {
         var key_inhere = $(".quick_add_content input[name='key_inhere']").val();
         var key = $(".quick_add_content input[name='key']").val();
-        var title = $(".quick_add_content input[name='title']").val();
-        var url = $(".quick_add_content input[name='url']").val();
+        var title = $(".quick_add_content input[name='title']").val().trim();
+        var url = $(".quick_add_content input[name='url']").val().trim();
         var icon = $(".quick_add_content input[name='icon']").val();
 
         var num = /^\+?[1-9][0-9]*$/;
@@ -1184,15 +1236,27 @@ $(document).ready(function () {
             });
             return;
         }
+        if (!title) {
+            iziToast.show({ timeout: 2000, message: '请填写快捷方式名称' });
+            return;
+        }
+        if (!safeUrl(url)) {
+            iziToast.show({ timeout: 2000, message: '请输入以 http 或 https 开头的网址' });
+            return;
+        }
 
         var quick_list = getQuickList();
 
         if (quick_list[key]) {
             iziToast.show({
                 timeout: 8000,
-                message: '快捷方式 " + key + " 已有数据，是否覆盖？',
+                message: '快捷方式 ' + key + ' 已有数据，是否覆盖？',
                 buttons: [
                     ['<button>确认</button>', function (instance, toast) {
+                        // 覆盖时若改了序号，旧序号条目一并移除，避免残留脏数据
+                        if (key_inhere && key !== key_inhere) {
+                            delete quick_list[key_inhere];
+                        }
                         quick_list[key] = {
                             title: title,
                             url: url,
@@ -1259,8 +1323,9 @@ $(document).ready(function () {
             message: '快捷方式数据将被清空',
             buttons: [
                 ['<button>确认</button>', function (instance, toast) {
-                    setQuickList(quick_list_preinstall);
+                    setQuickList(cloneDefaults(quick_list_preinstall));
                     setQuickInit();
+                    quickData(); // 首页同步刷新
                     instance.hide({
                         transitionOut: 'flipOutX',
                     }, toast, 'buttonName');
@@ -1268,9 +1333,6 @@ $(document).ready(function () {
                         timeout: 2000,
                         message: '重置成功'
                     });
-                    // setTimeout(function () {
-                    //     window.location.reload()
-                    // }, 1000);
                 }, true],
                 ['<button>取消</button>', function (instance, toast) {
                     instance.hide({
@@ -1286,11 +1348,14 @@ $(document).ready(function () {
 
         var quick_list = getQuickList();
         var key = $(this).val();
+        var q = quick_list[key];
+        // cookie 数据损坏（条目非对象）时忽略，避免 TypeError 中断
+        if (!q || typeof q !== 'object') return;
         $(".quick_add_content input[name='key_inhere']").val(key);
         $(".quick_add_content input[name='key']").val(key);
-        $(".quick_add_content input[name='title']").val(quick_list[key]["title"]);
-        $(".quick_add_content input[name='url']").val(quick_list[key]["url"]);
-        $(".quick_add_content input[name='icon']").val(quick_list[key]["icon"] || '');
+        $(".quick_add_content input[name='title']").val(q["title"] || '');
+        $(".quick_add_content input[name='url']").val(q["url"] || '');
+        $(".quick_add_content input[name='icon']").val(q["icon"] || '');
 
         //隐藏列表
         hideQuick();
@@ -1312,6 +1377,7 @@ $(document).ready(function () {
                     delete quick_list[key];
                     setQuickList(quick_list);
                     setQuickInit();
+                    quickData(); // 首页同步刷新
                     instance.hide({
                         transitionOut: 'flipOutX',
                     }, toast, 'buttonName');
@@ -1342,8 +1408,8 @@ $(document).ready(function () {
     $(".bookmark_add_save").click(function () {
         var key_inhere = $(".bookmark_add_content input[name='key_inhere']").val();
         var key = $(".bookmark_add_content input[name='key']").val();
-        var title = $(".bookmark_add_content input[name='title']").val();
-        var url = $(".bookmark_add_content input[name='url']").val();
+        var title = $(".bookmark_add_content input[name='title']").val().trim();
+        var url = $(".bookmark_add_content input[name='url']").val().trim();
         var icon = $(".bookmark_add_content input[name='icon']").val();
 
         var num = /^\+?[1-9][0-9]*$/;
@@ -1355,6 +1421,10 @@ $(document).ready(function () {
             iziToast.show({ timeout: 2000, message: '请填写书签名称与网址' });
             return;
         }
+        if (!safeUrl(url)) {
+            iziToast.show({ timeout: 2000, message: '请输入以 http 或 https 开头的网址' });
+            return;
+        }
 
         var list = getBookmarkList();
 
@@ -1364,6 +1434,8 @@ $(document).ready(function () {
                 message: '书签 ' + key + ' 已有数据，是否覆盖？',
                 buttons: [
                     ['<button>确认</button>', function (instance, toast) {
+                        // 覆盖时若改了序号，旧序号条目一并移除，避免残留脏数据
+                        if (key_inhere && key !== key_inhere) delete list[key_inhere];
                         list[key] = { title: title, url: url, icon: icon };
                         setBookmarkList(list);
                         setBookmarkInit();
@@ -1400,12 +1472,14 @@ $(document).ready(function () {
     $(".bookmark_list").on("click", ".edit_bookmark", function () {
         var list = getBookmarkList();
         var key = $(this).val();
-        if (!list[key]) return;
+        var bm = list[key];
+        // cookie 数据损坏（条目非对象）时忽略，避免 TypeError 中断
+        if (!bm || typeof bm !== 'object') return;
         $(".bookmark_add_content input[name='key_inhere']").val(key);
         $(".bookmark_add_content input[name='key']").val(key);
-        $(".bookmark_add_content input[name='title']").val(list[key]["title"]);
-        $(".bookmark_add_content input[name='url']").val(list[key]["url"]);
-        $(".bookmark_add_content input[name='icon']").val(list[key]["icon"] || '');
+        $(".bookmark_add_content input[name='title']").val(bm["title"] || '');
+        $(".bookmark_add_content input[name='url']").val(bm["url"] || '');
+        $(".bookmark_add_content input[name='icon']").val(bm["icon"] || '');
         $(".bookmark_list_table").hide();
         $(".bookmark_add_content").show();
     });
