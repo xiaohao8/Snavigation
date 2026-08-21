@@ -344,6 +344,10 @@
         extractDomain: extractDomain,
         faviconSources: faviconSources,
         onFavError: onFavError,
-        renderInto: renderInto
+        renderInto: renderInto,
+        // 品牌/徽章颜色映射（供图标库选择器按 id 判断走 SVG 还是徽章）
+        brands: BRAND_ICONS,
+        badgeColors: BADGE_COLORS,
+        hasBrandSvg: function (id) { return !!(BRAND_ICONS && BRAND_ICONS[id]); }
     };
 })(window);

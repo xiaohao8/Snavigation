@@ -7,8 +7,9 @@
 (function (global) {
     'use strict';
 
-    // 品牌库（sprite symbol 名 + 显示名 + 品牌色）
+    // 品牌库：有完整 SVG 的（BRAND_ICONS ）走品牌图标，其余走品牌色字母徽章
     var LIBRARY = [
+        // 完整 SVG 图标（能显示品牌图标、徽章能表示品牌）
         { id: 'baidu', label: '百度', color: '#2932E1' },
         { id: 'google', label: '谷歌', color: '#4285F4' },
         { id: 'sogou', label: '搜狗', color: '#FB6022' },
@@ -17,9 +18,55 @@
         { id: 'taobao', label: '淘宝', color: '#E94F20' },
         { id: 'github', label: 'GitHub', color: '#ffffff' },
         { id: 'bilibili', label: '哔哩哔哩', color: '#00A1D6' },
+        // 品牌色字母徽章
         { id: 'bing', label: '必应', color: '#008373' },
         { id: 'jd', label: '京东', color: '#E1251B' },
-        { id: '360', label: '360', color: '#E2001A' }
+        { id: '360', label: '360', color: '#E2001A' },
+        // 其他常用品牌（品牌色字母徽章）
+        { id: 'douyin', label: '抖音', color: '#000000' },
+        { id: 'xiaohongshu', label: '小红书', color: '#FF2442' },
+        { id: 'wechat', label: '微信', color: '#07C160' },
+        { id: 'qq', label: 'QQ', color: '#12B7F5' },
+        { id: 'dingtalk', label: '钉钉', color: '#1677FF' },
+        { id: 'feishu', label: '飞书', color: '#3370FF' },
+        { id: 'wework', label: '企业微信', color: '#0084FF' },
+        { id: 'weibo', label: '微博', color: '#E6162D' },
+        { id: 'baidu-pan', label: '百度网盘', color: '#06A0FF' },
+        { id: 'aliyundrive', label: '阿里云盘', color: '#3370FF' },
+        { id: 'quark', label: '夸克', color: '#2D6EF5' },
+        { id: 'cainiao', label: '菜鸟', color: '#FF6E00' },
+        { id: 'twitter', label: 'Twitter', color: '#1DA1F2' },
+        { id: 'facebook', label: 'Facebook', color: '#1877F2' },
+        { id: 'youtube', label: 'YouTube', color: '#FF0000' },
+        { id: 'instagram', label: 'Instagram', color: '#E4405F' },
+        { id: 'linkedin', label: 'LinkedIn', color: '#0A66C2' },
+        { id: 'pinterest', label: 'Pinterest', color: '#E60023' },
+        { id: 'reddit', label: 'Reddit', color: '#FF4500' },
+        { id: 'telegram', label: 'Telegram', color: '#0088CC' },
+        { id: 'discord', label: 'Discord', color: '#5865F2' },
+        { id: 'whatsapp', label: 'WhatsApp', color: '#25D366' },
+        { id: 'messenger', label: 'Messenger', color: '#0084FF' },
+        { id: 'slack', label: 'Slack', color: '#4A154B' },
+        { id: 'microsoft', label: 'Microsoft', color: '#5E5E5E' },
+        { id: 'apple', label: 'Apple', color: '#000000' },
+        { id: 'amazon', label: 'Amazon', color: '#FF9900' },
+        { id: 'spotify', label: 'Spotify', color: '#1DB954' },
+        { id: 'netflix', label: 'Netflix', color: '#E50914' },
+        { id: 'docker', label: 'Docker', color: '#2496ED' },
+        { id: 'stackoverflow', label: 'Stack Overflow', color: '#F48024' },
+        { id: 'gitlab', label: 'GitLab', color: '#FC6D26' },
+        { id: 'notion', label: 'Notion', color: '#000000' },
+        { id: 'figma', label: 'Figma', color: '#F24E1E' },
+        { id: 'sketch', label: 'Sketch', color: '#F7B500' },
+        { id: 'dribbble', label: 'Dribbble', color: '#EA4C89' },
+        { id: 'behance', label: 'Behance', color: '#1769FF' },
+        { id: 'medium', label: 'Medium', color: '#000000' },
+        { id: 'wordpress', label: 'WordPress', color: '#21759B' },
+        { id: 'stripe', label: 'Stripe', color: '#635BFF' },
+        { id: 'paypal', label: 'PayPal', color: '#003087' },
+        { id: 'cloudflare', label: 'Cloudflare', color: '#F38020' },
+        { id: 'aws', label: 'AWS', color: '#FF9900' },
+        { id: 'azure', label: 'Azure', color: '#0078D4' }
     ];
 
     var mask = null;
@@ -37,19 +84,20 @@
 
     function renderGrid() {
         grid.innerHTML = '';
+        var hasBrandSvg = (typeof Icons !== 'undefined' && Icons.hasBrandSvg) ? Icons.hasBrandSvg : null;
         LIBRARY.forEach(function (item) {
             var cell = el('div', 'icon-picker-cell');
             cell.setAttribute('data-id', item.id);
             cell.setAttribute('role', 'button');
             cell.setAttribute('tabindex', '0');
-            // 预览：品牌 SVG 或字母徽章
+            // 预览：BRAND_ICONS 中有 SVG 的品牌渲染完整图标，其余用品牌色字母徽章
             var preview;
-            if (typeof Icons !== 'undefined' && LIBRARY.some(function (b) { return b.id === item.id && b.id !== 'bing' && b.id !== 'jd' && b.id !== '360'; })) {
+            if (hasBrandSvg && hasBrandSvg(item.id)) {
                 preview = document.createElement('span');
                 preview.className = 'icon-picker-preview';
                 preview.innerHTML = Icons.svg(item.id, '1.2em', item.color);
             } else {
-                preview = el('span', 'icon-picker-preview icon-picker-preview--badge', item.id.charAt(0).toUpperCase());
+                preview = el('span', 'icon-picker-preview icon-picker-preview--badge', item.label.charAt(0));
                 preview.style.setProperty('--badge-color', item.color);
             }
             cell.appendChild(preview);

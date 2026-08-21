@@ -606,16 +606,6 @@ body:not([data-theme="glass"]) .set {
     overflow: auto;
 }
 
-/* 用户快捷方式区（分类内动态渲染，与静态推荐同一滚动容器，用户项在前） */
-.user-quicks {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    align-content: flex-start;
-    width: 100%;
-    margin-bottom: 8px;
-}
-
 .quick,
 .quicks {
     flex: 1;
@@ -841,39 +831,6 @@ body:not([data-theme="glass"]) .set {
     padding: 0px 10px;
     border: none;
     background: var(--main-input-color);
-}
-
-/* 快捷方式分类下拉 */
-.quick-add-cat {
-    font-size: 1rem;
-    outline: none;
-    height: 40px;
-    width: 100%;
-    border-radius: 8px;
-    padding: 0px 10px;
-    border: none;
-    background: var(--main-input-color);
-    color: var(--main-text-color);
-    cursor: pointer;
-}
-
-.quick-add-cat option {
-    background: var(--main-background-color);
-    color: var(--main-text-color);
-}
-
-/* 设置列表行内的分类小标签 */
-.quick-cat-tag {
-    flex-shrink: 0;
-    margin-left: 6px;
-    padding: 1px 7px;
-    font-size: 0.68rem;
-    line-height: 1.5;
-    color: var(--main-text-color);
-    opacity: 0.75;
-    background: var(--main-input-color);
-    border-radius: 999px;
-    white-space: nowrap;
 }
 
 .add_content input:hover,
