@@ -95,6 +95,98 @@ var se_list_preinstall = {
     }
 };
 
+// 原始「快捷方式」页的精选书签（原有数据，按分类整理）。
+// 同一站点在多个分类出现时仅保留首个分类（单一数据源模型下每项一个分类）。
+// 这些书签会与下方 quick_list_preinstall（设置页「快捷方式」种子）按 URL 去重合并，
+// 作为统一的默认 quick_list，确保「设置页 ↔ 快捷方式页」内容一致且原有数据不丢失。
+var mark_bookmarks = [
+    // 常用
+    { title: "GitHub", url: "https://github.com/", cat: "常用" },
+    { title: "哔哩哔哩", url: "https://www.bilibili.com/", cat: "常用" },
+    { title: "DeepSeek", url: "https://chat.deepseek.com/", cat: "常用" },
+    { title: "知乎", url: "https://www.zhihu.com/", cat: "常用" },
+    { title: "网易云音乐", url: "https://music.163.com/", cat: "常用" },
+    { title: "抖音", url: "https://www.douyin.com/", cat: "常用" },
+    // AI
+    { title: "Kimi", url: "https://kimi.moonshot.cn/", cat: "AI" },
+    { title: "通义千问", url: "https://tongyi.aliyun.com/", cat: "AI" },
+    { title: "豆包", url: "https://www.doubao.com/", cat: "AI" },
+    { title: "ChatGPT", url: "https://chat.openai.com/", cat: "AI" },
+    { title: "秘塔", url: "https://metaso.cn/", cat: "AI" },
+    { title: "腾讯元宝", url: "https://yuanbao.tencent.com/", cat: "AI" },
+    { title: "MiniMax海螺", url: "https://hailuoai.video/", cat: "AI" },
+    { title: "智谱清言", url: "https://chatglm.cn/", cat: "AI" },
+    { title: "文心一言", url: "https://yiyan.baidu.com/", cat: "AI" },
+    { title: "讯飞星火", url: "https://xinghuo.xfyun.cn/", cat: "AI" },
+    // 工具
+    { title: "10分钟邮箱", url: "https://10minutemail.net/", cat: "工具" },
+    { title: "Convertio", url: "https://convertio.co/zh/", cat: "工具" },
+    { title: "iLovePDF", url: "https://www.ilovepdf.com/zh-cn", cat: "工具" },
+    { title: "ProcessOn", url: "https://www.processon.com/", cat: "工具" },
+    { title: "文叔叔", url: "https://www.wenshushu.cn/", cat: "工具" },
+    { title: "蓝奏云", url: "https://www.lanzou.com/", cat: "工具" },
+    { title: "remove.bg", url: "https://www.remove.bg/zh/", cat: "工具" },
+    { title: "TinyPNG", url: "https://tinypng.com/", cat: "工具" },
+    { title: "草料二维码", url: "https://cli.im/", cat: "工具" },
+    // 办公
+    { title: "QQ邮箱", url: "https://mail.qq.com/", cat: "办公" },
+    { title: "网易邮箱", url: "https://mail.163.com/", cat: "办公" },
+    { title: "阿里邮箱", url: "https://mail.aliyun.com/", cat: "办公" },
+    // 开发
+    { title: "itdog", url: "https://www.itdog.cn/", cat: "开发" },
+    { title: "中科大测速", url: "https://test.ustc.edu.cn/", cat: "开发" },
+    { title: "whois工具", url: "https://whois.chinaz.com/", cat: "开发" },
+    { title: "DNSPod", url: "https://www.dnspod.cn/", cat: "开发" },
+    { title: "阿里云拨测", url: "https://boce.aliyun.com/", cat: "开发" },
+    { title: "Stack Overflow", url: "https://stackoverflow.com/", cat: "开发" },
+    { title: "Vercel", url: "https://vercel.com/", cat: "开发" },
+    { title: "Netlify", url: "https://www.netlify.com/", cat: "开发" },
+    { title: "站长工具", url: "https://tool.chinaz.com/", cat: "开发" },
+    { title: "JsRun", url: "https://jsrun.net/", cat: "开发" },
+    { title: "虫部落", url: "https://www.chongbuluo.com/", cat: "开发" },
+    { title: "Aconvert", url: "https://www.aconvert.com/cn/", cat: "开发" },
+    { title: "MSDN", url: "https://next.itellyou.cn/", cat: "开发" },
+    { title: "BEJSON", url: "https://www.bejson.com/", cat: "开发" },
+    { title: "Z-Library", url: "https://zh.z-lib.org/", cat: "开发" },
+    { title: "微信读书", url: "https://weread.qq.com/", cat: "开发" },
+    { title: "VocalreMover", url: "https://vocalremover.org/ch/", cat: "开发" },
+    { title: "工具啦", url: "https://tool.lu/", cat: "开发" },
+    { title: "微步云沙箱", url: "https://s.threatbook.cn/", cat: "开发" },
+    { title: "表格生成", url: "https://www.tablesgenerator.com/", cat: "开发" },
+    { title: "语雀", url: "https://www.yuque.com/", cat: "开发" },
+    { title: "爱资料工具", url: "https://www.toolnb.com/", cat: "开发" },
+    // 娱乐
+    { title: "快手", url: "https://www.kuaishou.com/", cat: "娱乐" },
+    { title: "爱奇艺", url: "https://www.iqiyi.com/", cat: "娱乐" },
+    { title: "腾讯视频", url: "https://v.qq.com/", cat: "娱乐" },
+    { title: "优酷", url: "https://www.youku.com/", cat: "娱乐" },
+    { title: "芒果TV", url: "https://www.mgtv.com/", cat: "娱乐" },
+    { title: "红果短剧", url: "https://www.hongguoduanju.com/", cat: "娱乐" },
+    { title: "免费小说网", url: "https://www.mianfeixiaoshuo.com/", cat: "娱乐" },
+    { title: "豆瓣", url: "https://www.douban.com/", cat: "娱乐" },
+    { title: "微博", url: "https://weibo.com/", cat: "娱乐" },
+    { title: "百度贴吧", url: "https://tieba.baidu.com/", cat: "娱乐" },
+    { title: "热搜头条", url: "https://tophub.today/", cat: "娱乐" },
+    { title: "QQ音乐", url: "https://y.qq.com/", cat: "娱乐" },
+    { title: "虎牙", url: "https://www.huya.com/", cat: "娱乐" },
+    { title: "喜马拉雅", url: "https://www.ximalaya.com/", cat: "娱乐" },
+    // 学习
+    { title: "优课联盟", url: "https://www.uooc.net.cn/", cat: "学习" },
+    { title: "学习通", url: "https://i.chaoxing.com/", cat: "学习" },
+    { title: "知到智慧树", url: "https://www.zhihuishu.com/", cat: "学习" },
+    { title: "中国大学MOOC", url: "https://www.icourse163.org/", cat: "学习" },
+    { title: "网易公开课", url: "https://open.163.com/", cat: "学习" },
+    { title: "学堂在线", url: "https://www.xuetangx.com/", cat: "学习" },
+    // 设计
+    { title: "Wallhaven", url: "https://wallhaven.cc/", cat: "设计" },
+    { title: "Figma", url: "https://www.figma.com/", cat: "设计" },
+    { title: "IconFont", url: "https://www.iconfont.cn/", cat: "设计" },
+    { title: "unDraw", url: "https://undraw.co/", cat: "设计" },
+    { title: "Photopea", url: "https://www.photopea.com/", cat: "设计" },
+    { title: "Spline", url: "https://spline.design/", cat: "设计" },
+    { title: "CSS动画库", url: "https://animate.style/", cat: "设计" }
+];
+
 // 默认快捷方式（cat：所属分类，用于快捷方式页的分组；缺省归到「常用」）
 var quick_list_preinstall = {
     '1': {
@@ -263,6 +355,29 @@ var quick_list_preinstall = {
         cat: "学习",
     }
 };
+
+// 重建默认 quick_list：以「原始快捷方式页精选书签」为优先（决定分类），
+// 再补充设置页「快捷方式」种子中 URL 不重复的项，按 URL 去重。
+// 使 quick_list_preinstall 即合并后的统一默认值（供「恢复预设」使用），且原有数据不丢失。
+(function () {
+    var base = {};
+    var seen = {};
+    var n = 0;
+    function add(it) {
+        if (!it || !it.url) return;
+        var u = String(it.url).trim().replace(/\/+$/, '').toLowerCase();
+        if (seen[u]) return;
+        seen[u] = true;
+        n += 1;
+        base[String(n)] = { title: it.title, url: it.url, icon: it.icon || '', cat: it.cat || '常用' };
+    }
+    mark_bookmarks.forEach(add);                 // 原始书签优先（分类以快捷方式页精选为准）
+    for (var k in quick_list_preinstall) {       // 设置种子补充（不覆盖已存在的原始书签）
+        if (!Object.prototype.hasOwnProperty.call(quick_list_preinstall, k)) continue;
+        add(quick_list_preinstall[k]);
+    }
+    quick_list_preinstall = base;
+})();
 
 // ===== 数据安全工具 =====
 
@@ -571,10 +686,53 @@ function setSeInit() {
     $(".se_list_table").html(html);
 }
 
-// 旧版 cookie 的快捷方式可能缺少 cat 字段：按 key 从预装默认值回填分类，
-// 保证升级后默认项仍按分类正确归集；自定义项（key 不在预装中）归「常用」。
+// 将「原始快捷方式页精选书签」并入目标列表（恢复被遗漏的原有数据）。
+// 按 URL 归一化去重，不覆盖已有项；返回新增条数。
+function mergeMarkDefaults(list) {
+    var seen = {};
+    var maxKey = 0;
+    for (var k in list) {
+        if (!Object.prototype.hasOwnProperty.call(list, k)) continue;
+        var q = list[k];
+        if (q && q.url) seen[String(q.url).trim().replace(/\/+$/, '').toLowerCase()] = true;
+        var nk = parseInt(k, 10);
+        if (!isNaN(nk) && nk > maxKey) maxKey = nk;
+    }
+    var added = 0;
+    for (var i = 0; i < mark_bookmarks.length; i++) {
+        var m = mark_bookmarks[i];
+        if (!m || !m.url) continue;
+        var u = String(m.url).trim().replace(/\/+$/, '').toLowerCase();
+        if (seen[u]) continue;
+        seen[u] = true;
+        maxKey += 1;
+        list[String(maxKey)] = {
+            title: m.title,
+            url: m.url,
+            icon: m.icon || '',
+            cat: m.cat || '常用'
+        };
+        added += 1;
+    }
+    return added;
+}
+
+// 旧版 cookie 的快捷方式可能缺少 cat 字段：按 URL 从预装默认值回填分类，
+// 保证升级后默认项仍按分类正确归集；自定义项（URL 不在预装中）归「常用」。
 // 返回 { list, dirty }，dirty=true 表示发生过回填，需写回 cookie。
 function backfillQuickCat(list) {
+    // 构建 URL -> 分类 映射（仅构建一次）
+    if (!backfillQuickCat._map) backfillQuickCat._map = {};
+    if (!backfillQuickCat._built) {
+        for (var pk in quick_list_preinstall) {
+            if (!Object.prototype.hasOwnProperty.call(quick_list_preinstall, pk)) continue;
+            var pq = quick_list_preinstall[pk];
+            if (pq && pq.url && pq.cat && QUICK_CATS && QUICK_CATS.indexOf(pq['cat']) >= 0) {
+                backfillQuickCat._map[String(pq.url).trim().replace(/\/+$/, '').toLowerCase()] = pq['cat'];
+            }
+        }
+        backfillQuickCat._built = true;
+    }
     var dirty = false;
     for (var k in list) {
         if (!Object.prototype.hasOwnProperty.call(list, k)) continue;
@@ -582,9 +740,8 @@ function backfillQuickCat(list) {
         if (!q || typeof q !== 'object') continue;
         var valid = (typeof q['cat'] === 'string' && QUICK_CATS && QUICK_CATS.indexOf(q['cat']) >= 0);
         if (!valid) {
-            var def = quick_list_preinstall[k];
-            q['cat'] = (def && typeof def['cat'] === 'string' && QUICK_CATS.indexOf(def['cat']) >= 0)
-                ? def['cat'] : '常用';
+            var u = q['url'] ? String(q['url']).trim().replace(/\/+$/, '').toLowerCase() : '';
+            q['cat'] = (u && backfillQuickCat._map[u]) ? backfillQuickCat._map[u] : '常用';
             dirty = true;
         }
     }
@@ -597,15 +754,22 @@ function getQuickList() {
     if (raw && raw !== "{}") {
         var parsed = parseListObj(raw);
         if (parsed) {
-            // 升级兼容：回填缺失的分类字段（默认项按预装归类，自定义项归常用）
+            var dirty = false;
+            // 一次性升级：把原始「快捷方式」页精选书签补回，恢复被遗漏的原有数据
+            if (!Cookies.get('quick_migrated_v2')) {
+                if (mergeMarkDefaults(parsed) > 0) dirty = true;
+                Cookies.set('quick_migrated_v2', '1', { expires: 36500 });
+            }
+            // 回填缺失的分类字段（按 URL 匹配预装分类，自定义项归常用）
             var migrated = backfillQuickCat(parsed);
-            if (migrated.dirty) setQuickList(migrated.list);
-            return migrated.list;
+            if (dirty || migrated.dirty) setQuickList(parsed);
+            return parsed;
         }
     }
-    // cookie 缺失 / 损坏时重置为默认（返回副本）
+    // cookie 缺失 / 损坏时重置为默认（含原始书签 + 设置种子，返回副本）
     var defaults = cloneDefaults(quick_list_preinstall);
     setQuickList(defaults);
+    Cookies.set('quick_migrated_v2', '1', { expires: 36500 });
     return defaults;
 }
 
