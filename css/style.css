@@ -845,6 +845,34 @@ body:not([data-theme="glass"]) .set {
     color: var(--main-input-text-placeholder-color);
 }
 
+/* 表单分类下拉框：与输入框视觉一致 */
+.add_content select {
+    font-size: 1.05rem;
+    outline: none;
+    height: 40px;
+    width: 100%;
+    border-radius: 8px;
+    padding: 0px 10px;
+    border: none;
+    background: var(--main-input-color);
+    color: inherit;
+    cursor: pointer;
+}
+
+.add_content select:hover,
+.add_content select:active {
+    box-shadow: var(--main-search-hover-shadow);
+}
+
+/* 快捷方式页：空分类提示 */
+.mark-empty {
+    width: 100%;
+    text-align: center;
+    color: var(--main-input-text-placeholder-color);
+    padding: 32px 0;
+    font-size: 0.95rem;
+}
+
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
     -webkit-appearance: none;

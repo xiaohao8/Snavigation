@@ -95,139 +95,172 @@ var se_list_preinstall = {
     }
 };
 
-// 默认快捷方式
+// 默认快捷方式（cat：所属分类，用于快捷方式页的分组；缺省归到「常用」）
 var quick_list_preinstall = {
     '1': {
         title: "醉里博客",
         url: "https://202271.xyz",
+        cat: "常用",
     },
     '2': {
         title: "GitHub",
         url: "https://github.com/",
+        cat: "常用",
     },
     '3': {
         title: "cloudflare",
         url: "https://dash.cloudflare.com/",
+        cat: "开发",
     },
     '4': {
         title: "W3school",
         url: "https://www.w3school.com.cn/",
+        cat: "学习",
     },
     '5': {
         title: "腾讯云",
         url: "https://console.cloud.tencent.com/",
+        cat: "办公",
     },
     '6': {
         title: "阿里云",
         url: "https://console.aliyun.com/",
+        cat: "办公",
     },
     '7': {
         title: "百度网盘",
         url: "https://pan.baidu.com/",
+        cat: "办公",
     },
     '8': {
         title: "阿里云盘",
         url: "https://www.aliyundrive.com/drive/",
+        cat: "办公",
     },
     '9': {
         title: "Office",
         url: "https://www.office.com/",
+        cat: "办公",
     },
     '10': {
         title: "又拍云",
         url: "https://console.upyun.com/",
+        cat: "办公",
     },
     '11': {
         title: "CSDN",
         url: "https://www.csdn.net/",
+        cat: "开发",
     },
     '12': {
         title: "哔哩哔哩",
         url: "https://www.bilibili.com/",
+        cat: "娱乐",
     },
     '13': {
         title: "掘金",
         url: "https://juejin.cn/",
+        cat: "开发",
     },
     '14': {
         title: "菜鸟教程",
         url: "https://www.runoob.com/",
+        cat: "学习",
     },
     '15': {
         title: "LeetCode",
         url: "https://leetcode.cn/",
+        cat: "开发",
     },
     '16': {
         title: "牛客网",
         url: "https://www.nowcoder.com/",
+        cat: "学习",
     },
     '17': {
         title: "Gitee",
         url: "https://gitee.com/",
+        cat: "开发",
     },
     '18': {
         title: "开源中国",
         url: "https://www.oschina.net/",
+        cat: "开发",
     },
     '19': {
         title: "Steam++",
         url: "https://steampp.net/",
+        cat: "娱乐",
     },
     '20': {
         title: "图吧工具箱",
         url: "https://www.tbtool.cn/",
+        cat: "工具",
     },
     '21': {
         title: "TinyWow",
         url: "https://tinywow.com/",
+        cat: "工具",
     },
     '22': {
         title: "草料二维码",
         url: "https://cli.im/",
+        cat: "工具",
     },
     '23': {
         title: "ProcessOn",
         url: "https://www.processon.com/",
+        cat: "工具",
     },
     '24': {
         title: "PDF24",
         url: "https://tools.pdf24.org/zh/",
+        cat: "工具",
     },
     '25': {
         title: "TinyPNG",
         url: "https://tinypng.com/",
+        cat: "工具",
     },
     '26': {
         title: "Remove.bg",
         url: "https://www.remove.bg/zh/",
+        cat: "工具",
     },
     '27': {
         title: "DeepL",
         url: "https://www.deepl.com/zh/translator",
+        cat: "工具",
     },
     '28': {
         title: "学习通",
         url: "https://www.chaoxing.com/",
+        cat: "学习",
     },
     '29': {
         title: "知到",
         url: "https://www.zhihuishu.com/",
+        cat: "学习",
     },
     '30': {
         title: "中国大学MOOC",
         url: "https://www.icourse163.org/",
+        cat: "学习",
     },
     '31': {
         title: "学堂在线",
         url: "https://www.xuetangx.com/",
+        cat: "学习",
     },
     '32': {
         title: "国家智慧教育",
         url: "https://www.smartedu.cn/",
+        cat: "学习",
     },
     '33': {
         title: "慕课网",
         url: "https://www.imooc.com/",
+        cat: "学习",
     }
 };
 
@@ -661,6 +694,61 @@ function setBookmarkInit() {
     $(".bookmark_list_table").html(html);
 }
 
+// ===== 快捷方式页（.mark）与设置页统一渲染 =====
+// 分类顺序固定，与 index.html 中 .mark .tab 的 8 个 tab-item 一一对应，
+// 保证「设置页管理」与「快捷方式页展示」使用同一份 quick_list 且按分类正确关联。
+var QUICK_CATS = ['常用', 'AI', '工具', '办公', '开发', '娱乐', '学习', '设计'];
+
+// 快捷方式页动态渲染：读取 getQuickList()，按 cat 归集到各分类 .mainCont 的 .quick-alls。
+// 只替换 .quick-alls 内部 HTML，保留 .mark 容器与 tab 切换逻辑，避免破坏 Dock/动画。
+function renderMarkShortcuts() {
+    var mark = document.querySelector('.mark');
+    if (!mark) return;
+    var quick_list = getQuickList();
+
+    // 按分类归集（缺省 cat 或非法分类一律归到「常用」）
+    var byCat = {};
+    QUICK_CATS.forEach(function (c) { byCat[c] = []; });
+    for (var i in quick_list) {
+        if (!Object.prototype.hasOwnProperty.call(quick_list, i)) continue;
+        var q = quick_list[i];
+        if (!q || typeof q !== 'object') continue;
+        var cat = (typeof q['cat'] === 'string' && QUICK_CATS.indexOf(q['cat']) >= 0) ? q['cat'] : '常用';
+        byCat[cat].push(q);
+    }
+
+    var mains = mark.querySelectorAll('.products .mainCont');
+    QUICK_CATS.forEach(function (cat, idx) {
+        var cont = mains[idx];
+        if (!cont) return;
+        var quickAll = cont.querySelector('.quick-alls');
+        if (!quickAll) return;
+
+        var items = byCat[cat];
+        var html = '';
+        if (!items.length) {
+            html = '<div class="mark-empty">该分类暂无快捷方式，点右侧「添加」</div>';
+        }
+        items.forEach(function (q) {
+            var href = safeUrl(q['url']);
+            var title = String(q['title'] || '').trim();
+            // 非法地址/空名称不在快捷方式页展示（仍可在设置页编辑）
+            if (!href || !title) return;
+            var iconHtml = (typeof Icons !== 'undefined') ? Icons.site(href, title, 40, q['icon']) : '';
+            html += '<div class="quicks" title="' + escapeHtml(title) + '">'
+                + '<a href="' + escapeHtml(href) + '" target="_blank" rel="noopener noreferrer">'
+                + '<span class="q-icon">' + iconHtml + '</span>'
+                + '<span class="q-name">' + escapeHtml(title) + '</span></a></div>';
+        });
+        // 每个分类末尾的「添加」入口：跳转到设置-快捷方式-新增
+        html += '<div class="quicks mark-quick-add" title="添加快捷方式">'
+            + '<a href="javascript:void(0)" data-mark-add="1"><i class="iconfont icon-tianjia-"></i>'
+            + '<span class="q-name">添加</span></a></div>';
+
+        quickAll.innerHTML = html;
+    });
+}
+
 /**
  * 下载文本为文件
  * @param filename 文件名
@@ -715,13 +803,17 @@ function openBookmarkAdd() {
 }
 
 // 打开设置并直接进入"添加快捷方式"（快捷方式区表单）
-function openQuickAdd() {
+// defaultCat：从快捷方式页某分类「添加」入口进入时，预选该分类，保证正确关联
+function openQuickAdd(defaultCat) {
     openSet();
     $("#set-quick-menu").trigger('click');
     setQuickInit();
     setBookmarkInit();
     scrollToSetSection('section-quick');
     $(".set_quick_list_add").trigger('click');
+    if (defaultCat && QUICK_CATS && QUICK_CATS.indexOf(defaultCat) >= 0) {
+        $(".quick_add_content select[name='cat']").val(defaultCat);
+    }
 }
 
 // 关闭设置
@@ -743,6 +835,8 @@ function openBox() {
     $(".mark").css({
         "display": "flex",
     });
+    // 每次打开都按最新 quick_list 重新渲染，保证与设置页实时一致
+    renderMarkShortcuts();
 }
 
 // 快捷方式收起
@@ -902,6 +996,8 @@ $(document).ready(function () {
 
     // 快捷方式数据加载
     quickData();
+    // 快捷方式页（.mark）初始渲染：与设置页共用 quick_list
+    renderMarkShortcuts();
 
     // 壁纸数据加载
     setBgImgInit();
@@ -994,6 +1090,14 @@ $(document).ready(function () {
     // 用事件委托：quickData() 每次重渲染都会重建 #set-quick 节点，直接绑定会丢失
     $(document).on('click', '#set-quick', function () {
         openQuickAdd();
+    });
+
+    // 快捷方式页（.mark）内「添加」卡片：事件委托，因 renderMarkShortcuts 会重建节点
+    $(document).on('click', '[data-mark-add]', function (e) {
+        e.preventDefault();
+        // 取当前激活分类作为默认分类，进入设置后预选，保证正确关联
+        var activeCat = $('.mark .tab .tab-item.active').text().trim();
+        if (typeof openQuickAdd === 'function') openQuickAdd(activeCat);
     });
 
     // 修改默认搜索引擎
@@ -1221,6 +1325,7 @@ $(document).ready(function () {
     // 设置-快捷方式添加
     $(".set_quick_list_add").click(function () {
         $(".quick_add_content input").val("");
+        $(".quick_add_content select[name='cat']").val('常用');
         $(".quick_add_content").show();
 
         //隐藏列表
@@ -1234,6 +1339,7 @@ $(document).ready(function () {
         var title = $(".quick_add_content input[name='title']").val().trim();
         var url = $(".quick_add_content input[name='url']").val().trim();
         var icon = $(".quick_add_content input[name='icon']").val();
+        var cat = $(".quick_add_content select[name='cat']").val() || '常用';
 
         var num = /^\+?[1-9][0-9]*$/;
         if (!num.test(key)) {
@@ -1268,10 +1374,12 @@ $(document).ready(function () {
                             title: title,
                             url: url,
                             icon: icon,
+                            cat: cat,
                         };
                         setQuickList(quick_list);
                         setQuickInit();
                         quickData();
+                        renderMarkShortcuts(); // 快捷方式页同步刷新
                         $(".quick_add_content").hide();
                         //显示列表
                         showQuick();
@@ -1301,10 +1409,12 @@ $(document).ready(function () {
             title: title,
             url: url,
             icon: icon,
+            cat: cat,
         };
         setQuickList(quick_list);
         setQuickInit();
         quickData();
+        renderMarkShortcuts(); // 快捷方式页同步刷新
         $(".quick_add_content").hide();
         iziToast.show({
             timeout: 2000,
@@ -1333,6 +1443,7 @@ $(document).ready(function () {
                     setQuickList(cloneDefaults(quick_list_preinstall));
                     setQuickInit();
                     quickData(); // 首页同步刷新
+                    renderMarkShortcuts(); // 快捷方式页同步刷新
                     instance.hide({
                         transitionOut: 'flipOutX',
                     }, toast, 'buttonName');
@@ -1363,6 +1474,7 @@ $(document).ready(function () {
         $(".quick_add_content input[name='title']").val(q["title"] || '');
         $(".quick_add_content input[name='url']").val(q["url"] || '');
         $(".quick_add_content input[name='icon']").val(q["icon"] || '');
+        $(".quick_add_content select[name='cat']").val(q["cat"] || '常用');
 
         //隐藏列表
         hideQuick();
@@ -1385,6 +1497,7 @@ $(document).ready(function () {
                     setQuickList(quick_list);
                     setQuickInit();
                     quickData(); // 首页同步刷新
+                    renderMarkShortcuts(); // 快捷方式页同步刷新
                     instance.hide({
                         transitionOut: 'flipOutX',
                     }, toast, 'buttonName');
@@ -1446,6 +1559,7 @@ $(document).ready(function () {
                         list[key] = { title: title, url: url, icon: icon };
                         setBookmarkList(list);
                         setBookmarkInit();
+                        if (typeof BookmarkPanel !== 'undefined') BookmarkPanel.refresh();
                         $(".bookmark_add_content").hide();
                         $(".bookmark_list_table").show();
                         instance.hide({ transitionOut: 'flipOutX' }, toast, 'buttonName');
@@ -1464,6 +1578,7 @@ $(document).ready(function () {
         list[key] = { title: title, url: url, icon: icon };
         setBookmarkList(list);
         setBookmarkInit();
+        if (typeof BookmarkPanel !== 'undefined') BookmarkPanel.refresh();
         $(".bookmark_add_content").hide();
         $(".bookmark_list_table").show();
         iziToast.show({ timeout: 2000, message: '添加成功' });
@@ -1503,6 +1618,7 @@ $(document).ready(function () {
                     delete list[key];
                     setBookmarkList(list);
                     setBookmarkInit();
+                    if (typeof BookmarkPanel !== 'undefined') BookmarkPanel.refresh();
                     instance.hide({ transitionOut: 'flipOutX' }, toast, 'buttonName');
                     iziToast.show({ timeout: 2000, message: '删除成功' });
                 }, true],
