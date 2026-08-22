@@ -571,12 +571,37 @@ function setSeInit() {
     $(".se_list_table").html(html);
 }
 
+// 旧版 cookie 的快捷方式可能缺少 cat 字段：按 key 从预装默认值回填分类，
+// 保证升级后默认项仍按分类正确归集；自定义项（key 不在预装中）归「常用」。
+// 返回 { list, dirty }，dirty=true 表示发生过回填，需写回 cookie。
+function backfillQuickCat(list) {
+    var dirty = false;
+    for (var k in list) {
+        if (!Object.prototype.hasOwnProperty.call(list, k)) continue;
+        var q = list[k];
+        if (!q || typeof q !== 'object') continue;
+        var valid = (typeof q['cat'] === 'string' && QUICK_CATS && QUICK_CATS.indexOf(q['cat']) >= 0);
+        if (!valid) {
+            var def = quick_list_preinstall[k];
+            q['cat'] = (def && typeof def['cat'] === 'string' && QUICK_CATS.indexOf(def['cat']) >= 0)
+                ? def['cat'] : '常用';
+            dirty = true;
+        }
+    }
+    return { list: list, dirty: dirty };
+}
+
 // 获取快捷方式列表
 function getQuickList() {
     var raw = Cookies.get('quick_list');
     if (raw && raw !== "{}") {
         var parsed = parseListObj(raw);
-        if (parsed) return parsed;
+        if (parsed) {
+            // 升级兼容：回填缺失的分类字段（默认项按预装归类，自定义项归常用）
+            var migrated = backfillQuickCat(parsed);
+            if (migrated.dirty) setQuickList(migrated.list);
+            return migrated.list;
+        }
     }
     // cookie 缺失 / 损坏时重置为默认（返回副本）
     var defaults = cloneDefaults(quick_list_preinstall);
