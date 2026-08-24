@@ -1,0 +1,67 @@
+{
+  "name": "醉里起始页",
+  "short_name": "醉里导航",
+  "description": "一个简洁可定制的个人导航起始页，支持快捷方式、书签管理与外观自定义。",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "start_url": "./?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
+  "theme_color": "#404040",
+  "background_color": "#404040",
+  "categories": ["productivity", "utilities", "bookmarks"],
+  "icons": [
+    {
+      "src": "img/icon/pwa-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "img/icon/pwa-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "img/icon/pwa-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "img/icon/pwa-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "img/icon/favicon_144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "快捷方式",
+      "short_name": "快捷方式",
+      "description": "按分类浏览常用网站",
+      "url": "./?source=pwa&goto=shortcuts",
+      "icons": [
+        { "src": "img/icon/pwa-192.png", "sizes": "192x192", "type": "image/png" }
+      ]
+    },
+    {
+      "name": "设置",
+      "short_name": "设置",
+      "description": "个性化配置与数据管理",
+      "url": "./?source=pwa&goto=settings",
+      "icons": [
+        { "src": "img/icon/pwa-192.png", "sizes": "192x192", "type": "image/png" }
+      ]
+    }
+  ]
+}

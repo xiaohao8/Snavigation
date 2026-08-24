@@ -9,6 +9,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>醉里起始页</title>
     <link rel="icon" href="favicon.ico">
+    <!-- PWA：渐进式 Web 应用（可安装到桌面 / 离线访问） -->
+    <link rel="manifest" href="./manifest.webmanifest">
+    <meta name="theme-color" content="#404040">
+    <meta name="application-name" content="醉里导航">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="./img/icon/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="醉里导航">
     <!-- jQuery（本地化，避免 CDN 失效） -->
     <script defer src="./js/lib/jquery.min.js"></script>
     <!-- 引入样式 -->
@@ -587,6 +596,7 @@
                         <div class="tab-items">背景图片</div>
                         <div class="tab-items">数据备份</div>
                         <div class="tab-items" id="set-theme-menu">外观</div>
+                        <div class="tab-items" id="set-app-menu">App</div>
                     </div>
                     <div class="contents productss">
                         <!-- 搜索引擎设置 -->
