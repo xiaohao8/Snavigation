@@ -937,6 +937,49 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- App 设置：可安装到桌面 / 主屏幕，支持离线访问 -->
+                        <div class="mainConts">
+                            <div class="set_blocks">
+                                <div class="set_tip">
+                                    <span class="set_text">将本站安装为应用，添加到桌面 / 主屏幕，像 App 一样启动，并支持离线访问。</span>
+                                    <span class="set_text">安装后会在桌面显示应用图标，可从应用列表中卸载。</span>
+                                </div>
+                                <div class="set_blocks_content">
+                                    <div class="pwa-card">
+                                        <div class="pwa-card-title">添加到桌面</div>
+                                        <button class="but-ordinary pwa-btn" id="pwa-install-btn">安装到桌面</button>
+                                        <div class="pwa-card-desc" id="pwa-install-hint" hidden></div>
+                                    </div>
+                                    <div class="pwa-card pwa-card--ios" id="pwa-ios-panel" hidden>
+                                        <div class="pwa-card-title">iOS Safari 添加方法</div>
+                                        <ol class="pwa-ios-steps">
+                                            <li>用 <b>Safari</b> 打开本站（其他浏览器无法添加到主屏幕）。</li>
+                                            <li>点击底部的 <span class="pwa-ios-share">↑</span> <b>分享</b> 按钮。</li>
+                                            <li>在弹出菜单中选择 <b>「添加到主屏幕」</b>。</li>
+                                            <li>确认名称，点击右上角 <b>「添加」</b> 即可。</li>
+                                        </ol>
+                                    </div>
+                                    <div class="pwa-card pwa-card--info">
+                                        <div class="pwa-info-row">
+                                            <span class="pwa-info-label">连接状态</span>
+                                            <span class="pwa-info-value"><span id="pwa-status-dot" class="pwa-dot pwa-dot--on"></span><span id="pwa-status">检测中…</span></span>
+                                        </div>
+                                        <div class="pwa-info-row">
+                                            <span class="pwa-info-label">应用名称</span>
+                                            <span class="pwa-info-value">醉里导航</span>
+                                        </div>
+                                        <div class="pwa-info-row">
+                                            <span class="pwa-info-label">启动方式</span>
+                                            <span class="pwa-info-value">独立窗口（无浏览器地址栏）</span>
+                                        </div>
+                                        <div class="pwa-info-row">
+                                            <span class="pwa-info-label">版本</span>
+                                            <span class="pwa-info-value">Snavigation v 1.2 · PWA</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -958,6 +1001,17 @@
         </div>
     </section>
     <!-- 主体内容结束 -->
+    <!-- PWA 浮动安装提示（可关闭，关闭后不再显示） -->
+    <div id="pwa-fab" class="pwa-fab" hidden role="button" tabindex="0" aria-label="安装到桌面">
+        <svg class="pwa-fab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v12" />
+            <path d="m7 10 5 5 5-5" />
+            <path d="M5 21h14" />
+        </svg>
+        <span class="pwa-fab-text">安装 App</span>
+        <span id="pwa-fab-close" class="pwa-fab-close" role="button" tabindex="0" aria-label="关闭提示">×</span>
+    </div>
     <!-- noscript -->
     <noscript>
         <div class="noscript fixed-top">请开启 JavaScript</div>
@@ -1021,6 +1075,7 @@
     <script defer type="text/javascript" src="./js/icons.js"></script>
     <script defer type="text/javascript" src="./js/icon-picker.js"></script>
     <script defer type="text/javascript" src="./js/cookie-tip.js"></script>
+    <script defer src="./js/pwa.js"></script>
 </body>
 
 </html>

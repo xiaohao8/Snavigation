@@ -1202,6 +1202,232 @@ input[type="radio"]:checked+label {
     color: #000000b3;
 }
 
+/* ==================== PWA（可安装到桌面 / 离线访问） ==================== */
+.pwa-card {
+    position: relative;
+    background: var(--main-background-color);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin: 0 0 14px 0;
+    box-shadow: var(--main-search-shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.pwa-card-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--main-text-color);
+    letter-spacing: 0.02em;
+}
+
+.pwa-card-desc {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--main-text-color);
+    opacity: 0.75;
+    word-break: break-word;
+}
+
+.pwa-card--ios {
+    border-left: 3px solid #5b8def;
+}
+
+.pwa-card--info {
+    gap: 0;
+    padding: 6px 20px;
+}
+
+.pwa-btn {
+    align-self: flex-start;
+    min-width: 180px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+
+.pwa-btn--installed,
+.pwa-btn[disabled] {
+    cursor: default;
+    opacity: 0.55;
+    filter: grayscale(0.4);
+}
+
+.pwa-btn--installed:hover,
+.pwa-btn[disabled]:hover {
+    background: var(--main-background-color) !important;
+}
+
+.pwa-ios-steps {
+    margin: 4px 0 0 0;
+    padding-left: 22px;
+    color: var(--main-text-color);
+    font-size: 0.92rem;
+    line-height: 1.75;
+}
+
+.pwa-ios-steps li {
+    margin-bottom: 2px;
+}
+
+.pwa-ios-share {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    margin: 0 2px;
+    border-radius: 6px;
+    background: #5b8def;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 1;
+    vertical-align: -3px;
+}
+
+.pwa-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--main-button-color);
+    font-size: 0.92rem;
+}
+
+.pwa-info-row:last-child {
+    border-bottom: none;
+}
+
+.pwa-info-label {
+    color: var(--main-text-color);
+    opacity: 0.7;
+}
+
+.pwa-info-value {
+    color: var(--main-text-color);
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pwa-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 6px currentColor;
+}
+
+.pwa-dot--on {
+    background: #4ade80;
+    color: #4ade80;
+}
+
+.pwa-dot--off {
+    background: #f59e0b;
+    color: #f59e0b;
+    box-shadow: 0 0 6px currentColor;
+}
+
+/* --- 浮动安装按钮（右下角，可关闭） --- */
+.pwa-fab {
+    position: fixed;
+    right: 24px;
+    bottom: 100px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px 10px 12px;
+    border-radius: 999px;
+    background: var(--main-background-color);
+    color: var(--main-text-color);
+    box-shadow: var(--main-search-shadow), 0 0 0 1px var(--main-button-active-color);
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.92rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    opacity: 0;
+    transform: translateY(12px) scale(0.95);
+    transition: opacity .25s ease, transform .25s ease, background .2s ease;
+    pointer-events: none;
+}
+
+.pwa-fab[hidden] {
+    display: none;
+}
+
+.pwa-fab.pwa-fab--show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.pwa-fab:hover {
+    background: var(--main-background-hover-color);
+}
+
+.pwa-fab:active {
+    background: var(--main-background-active-color);
+}
+
+.pwa-fab-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.pwa-fab-text {
+    white-space: nowrap;
+}
+
+.pwa-fab-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin-left: 4px;
+    border-radius: 50%;
+    background: var(--main-button-color);
+    color: var(--main-text-color);
+    font-size: 16px;
+    line-height: 1;
+    font-weight: 400;
+    cursor: pointer;
+    transition: background .15s ease;
+}
+
+.pwa-fab-close:hover {
+    background: var(--main-button-hover-color);
+}
+
+.pwa-fab-close:active {
+    background: var(--main-button-active-color);
+}
+
+@media (max-width: 640px) {
+    .pwa-fab {
+        right: 16px;
+        bottom: 96px;
+        padding: 9px 12px 9px 10px;
+        font-size: 0.85rem;
+    }
+    .pwa-fab-text {
+        display: none;
+    }
+    .pwa-fab-icon {
+        width: 20px;
+        height: 20px;
+    }
+}
+
 ::-moz-selection {
     background: #00000040;
     color: #000000b3;
