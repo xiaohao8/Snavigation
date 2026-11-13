@@ -32,13 +32,24 @@
     });
     var panelState = { current: CONFIG.panelHeight, velocity: 0 };
 
-    // === 弹簧步进（半隐式欧拉，等价 useSpring 物理模型） ===
+    // === 弹簧步进（半隐式欧拉 + 子步进，等价 useSpring 物理模型） ===
+    // 半隐式欧拉要求每步 dt < 2m/c（本参数下约 16.7ms）。普通 60fps 屏幕 dt≈16.7ms
+    // 正好压在失稳边界，远程桌面/低帧率环境 dt 顶到 0.05s 时阻尼项直接发散：
+    // 尺寸会膨胀到 1e20px 量级，dock 面板被拉成全屏宽（边框横贯页面）、图标被
+    // 挤出版面、三个透明巨块盖住整页拦截所有点击——表现为「玻璃罩无法操作」。
+    // 把每帧 dt 切成 ≤1/240s 的子步后，任意帧率下积分无条件稳定。
+    var MAX_SUBDT = 1 / 240;
+
     function springStep(state, target, cfg, dt) {
-        var force = -cfg.stiffness * (state.current - target);
-        var dampForce = -cfg.damping * state.velocity;
-        var acc = (force + dampForce) / cfg.mass;
-        state.velocity += acc * dt;
-        state.current += state.velocity * dt;
+        var steps = Math.max(1, Math.ceil(dt / MAX_SUBDT));
+        var h = dt / steps;
+        for (var i = 0; i < steps; i++) {
+            var force = -cfg.stiffness * (state.current - target);
+            var dampForce = -cfg.damping * state.velocity;
+            var acc = (force + dampForce) / cfg.mass;
+            state.velocity += acc * h;
+            state.current += state.velocity * h;
+        }
     }
 
     // === 目标尺寸：距离 0 → magnification；距离 >= distance → baseItemSize（线性插值，对应 useTransform） ===
@@ -65,22 +76,38 @@
             var centerX = rect.x + rect.width / 2;
             var target = calcTarget(mouseX - centerX);
             springStep(itemStates[i], target, CONFIG.spring, dt);
+            // 数值兜底：非有限值直接吸附到目标，杜绝巨尺寸样式残留
+            if (!isFinite(itemStates[i].current) || !isFinite(itemStates[i].velocity)) {
+                itemStates[i].current = target;
+                itemStates[i].velocity = 0;
+            }
             var size = itemStates[i].current;
-            items[i].style.width = size + 'px';
-            items[i].style.height = size + 'px';
-            // 任一项未到达目标或仍有速度 → 仍需继续动画
-            if (Math.abs(size - target) > 0.05 || Math.abs(itemStates[i].velocity) > 0.05) {
+            // 收尾：已到达目标则精确吸附，避免残留误差样式与空转帧
+            if (Math.abs(size - target) <= 0.05 && Math.abs(itemStates[i].velocity) <= 0.05) {
+                itemStates[i].current = target;
+                itemStates[i].velocity = 0;
+                size = target;
+            } else {
                 settled = false;
             }
+            items[i].style.width = size + 'px';
+            items[i].style.height = size + 'px';
         }
 
         var panelTarget = panelHovered === 1 ? maxHeight : CONFIG.panelHeight;
         springStep(panelState, panelTarget, CONFIG.spring, dt);
+        if (!isFinite(panelState.current) || !isFinite(panelState.velocity)) {
+            panelState.current = panelTarget;
+            panelState.velocity = 0;
+        }
+        if (Math.abs(panelState.current - panelTarget) <= 0.05 && Math.abs(panelState.velocity) <= 0.05) {
+            panelState.current = panelTarget;
+            panelState.velocity = 0;
+        } else {
+            settled = false;
+        }
         if (dockOuter) {
             dockOuter.style.height = panelState.current + 'px';
-        }
-        if (Math.abs(panelState.current - panelTarget) > 0.05 || Math.abs(panelState.velocity) > 0.05) {
-            settled = false;
         }
 
         // 全部静止后停止 rAF，避免每帧强制重排（移动端开合面板卡顿的主因）
@@ -124,6 +151,14 @@
             start();
         });
     }
+
+    // 兜底：远程控制/切窗时可能收不到 mouseleave，导致面板卡在展开高度。
+    // 失焦时复位 hover 状态，让弹簧回落到静态尺寸。
+    window.addEventListener('blur', function () {
+        panelHovered = 0;
+        mouseX = Infinity;
+        start();
+    });
 
     // === 键盘可访问（Enter / Space 触发） ===
     items.forEach(function (item, i) {

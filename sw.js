@@ -6,7 +6,7 @@
  * - Cross-origin requests pass straight through.
  * Bump CACHE when shipping a breaking change so old caches are evicted.
  */
-const CACHE = 'snavigation-v1';
+const CACHE = 'snavigation-v2';
 const SHELL = [
   './',
   './index.html',
